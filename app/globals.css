@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
+@theme {
+  --color-brand-primary: #3b82f6;
+  --color-brand-secondary: #6366f1;
+  --color-success: #10b981;
+  --color-danger: #ef4444;
+  --color-warning: #f59e0b;
+  
+  --color-bg-dark: #0a0b10;
+  --color-bg-card: #151921;
+  --color-bg-border: #262c36;
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0b10;
+  --foreground: #f8fafc;
+  --card: #151921;
+  --card-foreground: #f1f5f9;
+  --popover: #151921;
+  --popover-foreground: #f1f5f9;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f1f5f9;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #262c36;
+  --input: #262c36;
+  --ring: #3b82f6;
+  --radius: 0.75rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .glass {
+    background: rgba(21, 25, 33, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .neon-glow-blue {
+    box-shadow: 0 0 15px -3px rgba(59, 130, 246, 0.3);
+  }
+  
+  .neon-glow-green {
+    box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.3);
+  }
+  
+  .neon-glow-red {
+    box-shadow: 0 0 15px -3px rgba(239, 68, 68, 0.3);
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500;
+  }
 }
+
