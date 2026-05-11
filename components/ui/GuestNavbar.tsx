@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { TrendingUp, Menu, X } from "lucide-react";
+import { TrendingUp, Menu, X, LayoutDashboard, User as UserIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const GuestNavbar = () => {
+  const { user } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -63,12 +65,29 @@ export const GuestNavbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/auth/login">
-            <Button variant="secondary" className="text-sm">Sign In</Button>
-          </Link>
-          <Link href="/auth/register">
-            <Button className="px-6 py-2 text-sm">Join Now</Button>
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground bg-white/5 px-4 py-2 rounded-xl border border-white/5">
+                <UserIcon className="w-4 h-4 text-success" />
+                <span>{user.displayName || user.email?.split('@')[0] || "Trader"}</span>
+              </div>
+              <Link href="/dashboard">
+                <Button className="px-6 py-2 text-sm flex items-center gap-2">
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <Link href="/auth/login">
+                <Button variant="secondary" className="text-sm">Sign In</Button>
+              </Link>
+              <Link href="/auth/register">
+                <Button className="px-6 py-2 text-sm">Join Now</Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -129,12 +148,31 @@ export const GuestNavbar = () => {
               </div>
 
               <div className="flex flex-col gap-6 pt-10 border-t border-white/5">
-                <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="secondary" className="w-full text-lg py-7 rounded-2xl">Sign In</Button>
-                </Link>
-                <Link href="/auth/register" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full text-lg py-7 rounded-2xl shadow-lg shadow-success/10">Join Now</Button>
-                </Link>
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-6 py-7 rounded-2xl bg-white/5 border border-white/5">
+                      <UserIcon className="w-5 h-6 text-success" />
+                      <span className="text-lg font-bold text-muted-foreground">
+                        {user.displayName || user.email?.split('@')[0] || "Trader"}
+                      </span>
+                    </div>
+                    <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className="w-full text-lg py-7 rounded-2xl shadow-lg shadow-success/10 flex items-center justify-center gap-3">
+                        <LayoutDashboard className="w-6 h-6" />
+                        Go to Dashboard
+                      </Button>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/auth/login" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button variant="secondary" className="w-full text-lg py-7 rounded-2xl">Sign In</Button>
+                    </Link>
+                    <Link href="/auth/register" onClick={() => setIsMobileMenuOpen(false)}>
+                      <Button className="w-full text-lg py-7 rounded-2xl shadow-lg shadow-success/10">Join Now</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           </>

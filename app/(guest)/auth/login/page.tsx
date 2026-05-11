@@ -1,40 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { TrendingUp, Mail, Lock, LogIn, Loader2, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuthActions } from "@/hooks/useAuthActions";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { login: loginAction, loading, error } = useAuthActions();
+  const { register, handleSubmit, formState: { errors } } = useForm();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      router.push("/dashboard");
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-        setError("Invalid email or password. Please try again.");
-      } else {
-        setError("An error occurred during sign in.");
-      }
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = async (data: any) => {
+    await loginAction(data);
   };
 
   return (
@@ -46,15 +26,9 @@ export default function LoginPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md space-y-10 z-10"
+        className="w-full mt-26 max-w-md space-y-10 z-10"
       >
         <div className="text-center space-y-4">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4 group">
-            <div className="p-3 bg-success/10 rounded-2xl border border-success/20 group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-8 h-8 text-success" />
-            </div>
-            <span className="text-3xl font-bold tracking-tight">Boyz<span className="text-success">Trade</span></span>
-          </Link>
           <h1 className="text-4xl font-bold tracking-tight">
             Welcome <span className="text-success">Back</span>
           </h1>
@@ -64,12 +38,12 @@ export default function LoginPage() {
         </div>
 
         <form
-          onSubmit={handleLogin}
+          onSubmit={handleSubmit(onSubmit)}
           className="glass p-8 rounded-[2.5rem] space-y-6 border border-white/10 shadow-2xl"
         >
-          {error && (
+          {(error || Object.keys(errors).length > 0) && (
             <div className="p-4 bg-danger/10 border border-danger/20 rounded-2xl text-danger text-sm text-center">
-              {error}
+              {error || (errors.email?.message as string) || (errors.password?.message as string)}
             </div>
           )}
 
@@ -80,9 +54,13 @@ export default function LoginPage() {
                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-success transition-colors" />
                  <input 
                    type="email" 
-                   required
-                   value={email}
-                   onChange={(e) => setEmail(e.target.value)}
+                   {...register("email", { 
+                     required: "Email is required",
+                     pattern: {
+                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                       message: "Invalid email address"
+                     }
+                   })}
                    placeholder="name@example.com"
                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-success transition-all text-sm"
                  />
@@ -98,9 +76,13 @@ export default function LoginPage() {
                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-success transition-colors" />
                  <input 
                    type="password" 
-                   required
-                   value={password}
-                   onChange={(e) => setPassword(e.target.value)}
+                   {...register("password", { 
+                     required: "Password is required",
+                     minLength: {
+                       value: 6,
+                       message: "Password must be at least 6 characters"
+                     }
+                   })}
                    placeholder="••••••••"
                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-success transition-all text-sm"
                  />

@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { 
   LayoutDashboard, 
@@ -15,13 +13,16 @@ import {
   Menu,
   X
 } from "lucide-react";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useAuthActions } from "@/hooks/useAuthActions";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Portfolio", href: "/portfolio", icon: Wallet },
-  { name: "Trade", href: "/trade", icon: ArrowLeftRight },
-  { name: "History", href: "/transactions", icon: TrendingUp },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Portfolio", href: "/dashboard/portfolio", icon: Wallet },
+  { name: "Trade", href: "/dashboard/trade", icon: ArrowLeftRight },
+  { name: "History", href: "/dashboard/transactions", icon: TrendingUp },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function DashboardLayout({
@@ -29,40 +30,14 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const { user } = useAuth();
+  const { logout } = useAuthActions();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (!currentUser) {
-        router.push("/auth/login");
-      } else {
-        setUser(currentUser);
-        setLoading(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [router]);
-
-  const handleLogout = async () => {
-    await auth.signOut();
-    router.push("/auth/login");
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-bg-dark flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-bg-dark text-foreground flex">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-bg-dark text-foreground flex">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -112,7 +87,7 @@ export default function DashboardLayout({
               <p className="text-sm font-medium truncate">{user?.email}</p>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-muted-foreground hover:bg-danger/10 hover:text-danger transition-all duration-200"
             >
               <LogOut className="w-5 h-5" />
@@ -142,5 +117,6 @@ export default function DashboardLayout({
         </div>
       </main>
     </div>
+    </ProtectedRoute>
   );
 }

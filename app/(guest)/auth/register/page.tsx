@@ -1,51 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { TrendingUp, Mail, Lock, UserPlus, Loader2, ArrowLeft } from "lucide-react";
+import { TrendingUp, Mail, Lock, Loader2, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuthActions } from "@/hooks/useAuthActions";
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const { register: registerAction, loading, error, setError } = useAuthActions();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const password = watch("password");
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
+  const onSubmit = async (data: any) => {
+    if (data.password !== data.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
-
-    setLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      router.push("/dashboard");
-    } catch (err: any) {
-      console.error(err);
-      if (err.code === "auth/email-already-in-use") {
-        setError("This email is already registered.");
-      } else {
-        setError("An error occurred during registration. Please try again.");
-      }
-    } finally {
-      setLoading(false);
-    }
+    await registerAction(data);
   };
 
   return (
@@ -75,12 +50,12 @@ export default function RegisterPage() {
         </div>
 
         <form
-          onSubmit={handleRegister}
+          onSubmit={handleSubmit(onSubmit)}
           className="glass p-8 rounded-[2.5rem] space-y-6 border border-white/10 shadow-2xl"
         >
-          {error && (
+          {(error || Object.keys(errors).length > 0) && (
             <div className="p-4 bg-danger/10 border border-danger/20 rounded-2xl text-danger text-sm text-center">
-              {error}
+              {error || (errors.email?.message as string) || (errors.password?.message as string) || (errors.confirmPassword?.message as string)}
             </div>
           )}
 
@@ -91,9 +66,13 @@ export default function RegisterPage() {
                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-success transition-colors" />
                  <input 
                    type="email" 
-                   required
-                   value={email}
-                   onChange={(e) => setEmail(e.target.value)}
+                   {...register("email", { 
+                     required: "Email is required",
+                     pattern: {
+                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                       message: "Invalid email address"
+                     }
+                   })}
                    placeholder="name@example.com"
                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-success transition-all text-sm"
                  />
@@ -106,9 +85,13 @@ export default function RegisterPage() {
                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-success transition-colors" />
                  <input 
                    type="password" 
-                   required
-                   value={password}
-                   onChange={(e) => setPassword(e.target.value)}
+                   {...register("password", { 
+                     required: "Password is required",
+                     minLength: {
+                       value: 8,
+                       message: "Password must be at least 8 characters"
+                     }
+                   })}
                    placeholder="At least 8 characters"
                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-success transition-all text-sm"
                  />
@@ -121,9 +104,10 @@ export default function RegisterPage() {
                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-success transition-colors" />
                  <input 
                    type="password" 
-                   required
-                   value={confirmPassword}
-                   onChange={(e) => setConfirmPassword(e.target.value)}
+                   {...register("confirmPassword", { 
+                     required: "Please confirm your password",
+                     validate: value => value === password || "Passwords do not match"
+                   })}
                    placeholder="Repeat password"
                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-success transition-all text-sm"
                  />
