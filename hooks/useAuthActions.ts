@@ -7,7 +7,9 @@ import { FirebaseError } from "firebase/app";
 
 export function useAuthActions() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAuthError = (err: unknown) => {
@@ -32,7 +34,7 @@ export function useAuthActions() {
   };
 
   const login = async (data: any) => {
-    setLoading(true);
+    setAuthLoading(true);
     setError(null);
     try {
       await authService.login(data.email, data.password);
@@ -40,32 +42,68 @@ export function useAuthActions() {
     } catch (err) {
       setError(handleAuthError(err));
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   const register = async (data: any) => {
-    setLoading(true);
+    setAuthLoading(true);
     setError(null);
     try {
-      await authService.register(data.email, data.password);
-      router.push("/dashboard");
+      const result = await authService.register(data.email, data.password, data.name);
+      if (result.user && !result.user.emailVerified) {
+        router.push("/auth/verification-sent");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err) {
       setError(handleAuthError(err));
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   const logout = async () => {
-    setLoading(true);
+    setAuthLoading(true);
     try {
       await authService.logout();
       router.push("/auth/login");
     } catch (err) {
       setError(handleAuthError(err));
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    try {
+      const result = await authService.signInWithGoogle();
+      if (result.user && !result.user.emailVerified) {
+        router.push("/auth/verification-sent");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      setError(handleAuthError(err));
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const resendVerificationEmail = async () => {
+    setResendLoading(true);
+    setError(null);
+    try {
+      const { auth } = await import("@/lib/firebase");
+      if (auth.currentUser) {
+        await authService.sendVerificationEmail(auth.currentUser);
+      }
+    } catch (err) {
+      setError(handleAuthError(err));
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -73,7 +111,11 @@ export function useAuthActions() {
     login,
     register,
     logout,
-    loading,
+    signInWithGoogle,
+    resendVerificationEmail,
+    authLoading,
+    googleLoading,
+    resendLoading,
     error,
     setError
   };

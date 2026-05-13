@@ -38,15 +38,9 @@ export default function ForgotPasswordPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full mt-26 max-w-md relative z-10"
       >
         <div className="text-center mb-10">
-          <Link href="/" className="inline-flex items-center gap-2 mb-8 group">
-            <div className="p-2 bg-success/10 rounded-xl border border-success/20 group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-6 h-6 text-success" />
-            </div>
-            <span className="text-2xl font-bold tracking-tight">Boyz<span className="text-success">Trade</span></span>
-          </Link>
           <h1 className="text-3xl font-bold mb-3">Reset your <span className="text-success">Password</span></h1>
           <p className="text-muted-foreground">Enter your email and we'll send you reset instructions.</p>
         </div>
@@ -102,7 +96,7 @@ export default function ForgotPasswordPage() {
               <Button 
                 type="submit" 
                 disabled={loading}
-                className="w-full py-6 rounded-2xl text-lg font-bold shadow-lg shadow-success/10"
+                className="w-full py-3 rounded-2xl text-lg font-bold shadow-lg shadow-success/10"
               >
                 {loading ? (
                   <Loader2 className="w-6 h-6 animate-spin" />

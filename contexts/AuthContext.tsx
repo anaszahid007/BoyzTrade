@@ -9,13 +9,15 @@ import { onAuthStateChanged, User } from "firebase/auth"
 interface AuthContextType {
     user: User | null,
     loading: boolean,
-    logout: () => Promise<void>
+    logout: () => Promise<void>,
+    refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
-    logout: async () => { }
+    logout: async () => { },
+    refreshUser: async () => { }
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -31,6 +33,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return unsubscribe
     }, [])
 
+    async function refreshUser() {
+        if (auth.currentUser) {
+            await auth.currentUser.reload();
+            setUser({ ...auth.currentUser });
+        }
+    }
+
     async function logout() {
         try {
             await authService.logout()
@@ -39,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
-    const value = { user, loading, logout }
+    const value = { user, loading, logout, refreshUser }
 
     return <AuthContext.Provider value={value}>
         {children}

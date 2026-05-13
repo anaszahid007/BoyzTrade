@@ -1,19 +1,36 @@
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  updateProfile,
+  sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithPopup,
   UserCredential
 } from "firebase/auth";
 import { auth } from "./firebase";
+
+const googleProvider = new GoogleAuthProvider();
 
 export const authService = {
   async login(email: string, password: string): Promise<UserCredential> {
     return signInWithEmailAndPassword(auth, email, password);
   },
 
-  async register(email: string, password: string): Promise<UserCredential> {
-    return createUserWithEmailAndPassword(auth, email, password);
+  async register(email: string, password: string, displayName?: string): Promise<UserCredential> {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    if (displayName && userCredential.user) {
+      await updateProfile(userCredential.user, { displayName });
+    }
+    if (userCredential.user) {
+      await sendEmailVerification(userCredential.user);
+    }
+    return userCredential;
+  },
+
+  async signInWithGoogle(): Promise<UserCredential> {
+    return signInWithPopup(auth, googleProvider);
   },
 
   async logout(): Promise<void> {
@@ -22,5 +39,9 @@ export const authService = {
 
   async resetPassword(email: string): Promise<void> {
     return sendPasswordResetEmail(auth, email);
+  },
+
+  async sendVerificationEmail(user: any): Promise<void> {
+    return sendEmailVerification(user);
   }
 };

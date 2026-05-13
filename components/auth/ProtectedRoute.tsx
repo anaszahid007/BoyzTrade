@@ -11,6 +11,8 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth/login");
+    } else if (!loading && user && !user.emailVerified) {
+      router.push("/auth/verification-sent");
     }
   }, [user, loading, router]);
 
@@ -22,7 +24,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     );
   }
 
-  if (!user) {
+  if (!user || !user.emailVerified) {
     return null;
   }
 
