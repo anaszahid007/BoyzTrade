@@ -6,7 +6,7 @@ import {
   updateProfile,
   sendEmailVerification,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
   UserCredential
 } from "firebase/auth";
 import { auth } from "./firebase";
@@ -30,7 +30,7 @@ export const authService = {
   },
 
   async signInWithGoogle(): Promise<UserCredential> {
-    return signInWithPopup(auth, googleProvider);
+    return signInWithRedirect(auth, googleProvider);
   },
 
   async logout(): Promise<void> {
