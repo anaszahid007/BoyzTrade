@@ -29,7 +29,7 @@ export const authService = {
     return userCredential;
   },
 
-  async signInWithGoogle(): Promise<UserCredential> {
+  async signInWithGoogle(): Promise<void> {
     return signInWithRedirect(auth, googleProvider);
   },
 

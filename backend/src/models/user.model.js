@@ -1,0 +1,39 @@
+import mongoose from 'mongoose';
+import argon2 from 'argon2';
+
+const { Schema, model } = mongoose;
+
+/**
+ * @schema User
+ * @description password is accepted on create/update but not persisted; passwordHash is stored
+ */
+const UserSchema = new Schema(
+  {
+    email: { type: String, required: true, unique: true, lowercase: true, index: true },
+    fullName: { type: String, required: true, index: true },
+    password: { type: String, required: true, select: false },
+    isEmailVerified: { type: Boolean, default: false }
+  },
+  { timestamps: true }
+);
+
+/**
+ * pre-save middleware: hash password if provided and store in passwordHash
+ */
+UserSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+  const hash = await argon2.hash(this.password);
+  this.password = hash;
+});
+
+/**
+ * @description Compare a plain password to stored passwordHash
+ * @param {string} candidate
+ * @returns {Promise<boolean>}
+ */
+UserSchema.methods.comparePassword = async function (candidate) {
+  if (!this.password) return false;
+  return argon2.verify(this.password, candidate);
+};
+
+export default model('User', UserSchema);

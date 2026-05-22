@@ -79,12 +79,8 @@ export function useAuthActions() {
     setGoogleLoading(true);
     setError(null);
     try {
-      const result = await authService.signInWithGoogle();
-      if (result.user && !result.user.emailVerified) {
-        router.push("/auth/verification-sent");
-      } else {
-        router.push("/dashboard");
-      }
+      await authService.signInWithGoogle();
+      // Redirect flow will complete after Firebase redirects back to the app.
     } catch (err) {
       setError(handleAuthError(err));
     } finally {
