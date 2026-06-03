@@ -1,29 +1,35 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Mail, CheckCircle2, ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuthActions } from "@/hooks/useAuthActions";
 import { useAuth } from "@/contexts/AuthContext";
 
-export default function VerificationSentPage() {
+function VerificationContent() {
   const { user, refreshUser } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const emailParam = searchParams.get("email");
+  const displayEmail = user?.email || emailParam;
+
   const { resendVerificationEmail, resendLoading } = useAuthActions();
   const [canResend, setCanResend] = useState(false);
   const [resendStatus, setResendStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.emailVerified) {
-      window.location.href = "/dashboard";
+    if (user?.isVerified) {
+      router.push("/auth/verified");
     }
-  }, [user]);
+  }, [user, router]);
 
   // Auto-refresh verification status every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      if (user && !user.emailVerified) {
+      if (user && !user.isVerified) {
         refreshUser();
       }
     }, 3000);
@@ -38,7 +44,7 @@ export default function VerificationSentPage() {
   const handleResend = async () => {
     if (!canResend) return;
     setResendStatus(null);
-    await resendVerificationEmail();
+    await resendVerificationEmail(displayEmail || undefined);
     setResendStatus("Verification email sent successfully!");
     setCanResend(false);
     setTimeout(() => setCanResend(true), 30000);
@@ -63,7 +69,7 @@ export default function VerificationSentPage() {
           </h1>
           <p className="text-muted-foreground">
             We've sent a verification link to{" "}
-            <span className="text-foreground font-medium">{user?.email}</span>
+            <span className="text-foreground font-medium">{displayEmail}</span>
           </p>
         </div>
 
@@ -98,27 +104,32 @@ export default function VerificationSentPage() {
           <div className="text-center pt-2">
             <p className="text-sm text-muted-foreground">
               Didn't receive the email?{" "}
-              <Link
-                href="/auth/login"
-                className="text-success hover:underline font-bold"
+              <button
+                onClick={handleResend}
+                disabled={!canResend || resendLoading}
+                className="text-success hover:underline font-bold disabled:opacity-50"
               >
-                Try signing in
-              </Link>{" "}
-              or check your spam folder.
+                Click to resend
+              </button>
             </p>
           </div>
         </div>
 
         <div className="text-center">
-          <Link
-            href="/"
-            className="text-sm text-muted-foreground hover:text-success flex items-center justify-center gap-2 transition-colors"
-          >
+          <Link href="/auth/login" className="text-sm text-muted-foreground hover:text-success flex items-center justify-center gap-2 transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            Back to Home
+            Back to Login
           </Link>
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function VerificationSentPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerificationContent />
+    </Suspense>
   );
 }

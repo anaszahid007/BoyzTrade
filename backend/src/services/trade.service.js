@@ -10,8 +10,52 @@ import Portfolio from '../models/portfolio.model.js';
 import PortfolioHolding from '../models/portfolioHolding.model.js';
 import WalletTransaction from '../models/walletTransaction.model.js';
 
+// Services
+import { getAssetPriceSymbol } from './market.service.js';
+import { emitToUser } from '../socket.js';
 
-const INITIAL_BALANCE = 100000;
+
+const INITIAL_BALANCE = 10000;
+
+/**
+ * Helper to handle transactions gracefully on standalone MongoDB instances (like local dev)
+ * Transactions require a Replica Set. If not present, we fall back to non-transactional execution.
+ */
+const runInTransaction = async (work) => {
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+  } catch (error) {
+    // If sessions are not supported at all, run without session
+    return await work(null);
+  }
+
+  try {
+    const result = await work(session);
+    await session.commitTransaction();
+    return result;
+  } catch (error) {
+    if (session) {
+      try {
+        await session.abortTransaction();
+      } catch (abortErr) {
+        // Ignore abort errors
+      }
+    }
+
+    // Check for the specific Replica Set error and retry without transaction
+    if (error.message.includes('replica set member or mongos')) {
+      return await work(null);
+    }
+    
+    throw error;
+  } finally {
+    if (session) {
+      await session.endSession();
+    }
+  }
+};
 
 
 /**
@@ -22,13 +66,14 @@ const INITIAL_BALANCE = 100000;
  * @throws {ApiError} - Throws error if asset not found, insufficient balance, or any other issue during transaction
 */
 export const buyAsset = async (userId, { symbol, quantity }) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  return await runInTransaction(async (session) => {
+    const asset = await Asset.findOne({ symbol: symbol.toUpperCase() }).session(session);
+    if (!asset) throw new ApiError(404, 'Asset not found');
 
-  try {
-    // Real-time price fetch karo
-    const currentPrice = await getRealPrice(asset_symbol);
-    if (currentPrice === 0) throw new ApiError(404, 'Asset not found or price unavailable');
+    const priceData = await getAssetPriceSymbol(symbol);
+    const currentPrice = priceData.current_price;
+    if (currentPrice === 0) throw new ApiError(404, 'Price unavailable for this asset');
+    
     const totalCost = currentPrice * quantity;
 
     let portfolio = await Portfolio.findOne({ userId }).session(session);
@@ -51,7 +96,7 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
         portfolioId: portfolio._id,
         assetId: asset._id,
         quantity,
-        averageBuyPrice: asset.currentPrice
+        averageBuyPrice: currentPrice
       });
       await holding.save({ session });
     }
@@ -61,7 +106,7 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
       assetId: asset._id,
       tradeType: 'BUY',
       quantity,
-      price: asset.currentPrice,
+      price: currentPrice,
       totalAmount: totalCost,
       status: 'COMPLETED',
       executedAt: new Date()
@@ -84,14 +129,15 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
     });
     await walletTx.save({ session });
 
-    await session.commitTransaction();
-    return { tradeId: trade._id, symbol: asset.symbol, quantity, message: `Successfully bought ${quantity} ${asset.symbol}` };
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    session.endSession();
-  }
+    const result = { tradeId: trade._id, symbol: asset.symbol, quantity, message: `Successfully bought ${quantity} ${asset.symbol}` };
+    
+    // Emit portfolio update
+    getPortfolio(userId).then(portfolioData => {
+      emitToUser(userId, "portfolio-update", portfolioData.data);
+    });
+
+    return result;
+  });
 };
 
 
@@ -103,20 +149,21 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
  * @throws {ApiError} - Throws error if asset not found, insufficient holdings, or any other issue during transaction
 */
 export const sellAsset = async (userId, { symbol, quantity }) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
-  try {
-    const asset = await getRealPrice(symbol);
+  return await runInTransaction(async (session) => {
+    const asset = await Asset.findOne({ symbol: symbol.toUpperCase() }).session(session);
     if (!asset) throw new ApiError(404, 'Asset not found');
+
+    const priceData = await getAssetPriceSymbol(symbol);
+    const currentPrice = priceData.current_price;
+    if (currentPrice === 0) throw new ApiError(404, 'Price unavailable for this asset');
 
     const portfolio = await Portfolio.findOne({ userId }).session(session);
     if (!portfolio) throw new ApiError(404, 'Portfolio not found');
 
-    const holding = await PortfolioHolding.findOne({ portfolioId: portfolio._id }).session(session);
+    const holding = await PortfolioHolding.findOne({ portfolioId: portfolio._id, assetId: asset._id }).session(session);
     if (!holding || holding.quantity < quantity) throw new ApiError(400, 'Insufficient holdings to sell');
 
-    const totalSellValue = asset.currentPrice * quantity;
+    const totalSellValue = currentPrice * quantity;
     const balanceBefore = portfolio.totalBalance;
 
     if (holding.quantity === quantity) {
@@ -131,7 +178,7 @@ export const sellAsset = async (userId, { symbol, quantity }) => {
       assetId: asset._id,
       tradeType: 'SELL',
       quantity,
-      price: asset.currentPrice,
+      price: currentPrice,
       totalAmount: totalSellValue,
       status: 'COMPLETED',
       executedAt: new Date()
@@ -153,14 +200,15 @@ export const sellAsset = async (userId, { symbol, quantity }) => {
     });
     await walletTx.save({ session });
 
-    await session.commitTransaction();
-    return { newBalance: portfolio.totalBalance, totalReceived: totalSellValue, message: `Successfully sold ${quantity} ${asset.symbol}` };
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    session.endSession();
-  }
+    const result = { newBalance: portfolio.totalBalance, totalReceived: totalSellValue, message: `Successfully sold ${quantity} ${asset.symbol}` };
+    
+    // Emit portfolio update
+    getPortfolio(userId).then(portfolioData => {
+      emitToUser(userId, "portfolio-update", portfolioData.data);
+    });
+
+    return result;
+  });
 };
 
 /**

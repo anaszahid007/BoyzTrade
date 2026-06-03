@@ -93,7 +93,7 @@ export default function PrivacyPolicyPage() {
                 <div>
                   <h3 className="text-lg font-semibold mb-2">2. Trading Activity</h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    We collect and store your virtual trading history, including buy/sell orders, portfolio holdings, and virtual balance changes. This data is essential for simulating your trading experience and is stored securely in Firebase.
+                    We collect and store your virtual trading history, including buy/sell orders, portfolio holdings, and virtual balance changes. This data is essential for simulating your trading experience and is stored securely in our backend.
                   </p>
                 </div>
                 <div>
@@ -139,10 +139,10 @@ export default function PrivacyPolicyPage() {
               </p>
               <ul className="space-y-2 text-muted-foreground list-disc list-inside">
                 <li>All data encrypted in transit using TLS/SSL</li>
-                <li>Firestore Security Rules restrict access to your data</li>
-                <li>Passwords hashed using Firebase Authentication</li>
+                <li>Server-side access controls restrict access to your data</li>
+                <li>Passwords hashed and stored securely in our backend</li>
                 <li>Regular security audits and dependency updates</li>
-                <li>Cloud Functions run in a secure, isolated environment</li>
+                <li>Backend APIs run in a secure, isolated environment</li>
               </ul>
             </div>
 
@@ -154,8 +154,8 @@ export default function PrivacyPolicyPage() {
               </p>
               <div className="space-y-3">
                 <div className="p-4 bg-white/5 rounded-xl">
-                  <p className="font-semibold">Firebase (Google)</p>
-                  <p className="text-sm text-muted-foreground">Authentication, database, and cloud functions hosting</p>
+                  <p className="font-semibold">Backend Services</p>
+                  <p className="text-sm text-muted-foreground">Authentication, database, and API handling for your account data</p>
                 </div>
                 <div className="p-4 bg-white/5 rounded-xl">
                   <p className="font-semibold">CoinGecko API</p>

@@ -1,20 +1,15 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
   ShieldCheck, 
-  Zap, 
   Globe, 
   ArrowRight, 
   ChevronRight,
-  BarChart3,
-  Cpu,
   MousePointer2,
   CheckCircle2,
-  Sparkles,
   Activity,
   DollarSign,
   Timer,

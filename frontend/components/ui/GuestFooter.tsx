@@ -27,8 +27,8 @@ export const GuestFooter = () => {
             <h4 className="font-bold text-sm uppercase tracking-widest text-success">Platform</h4>
             <ul className="space-y-4">
               <li><Link href="/market" className="text-sm text-muted-foreground hover:text-success transition-colors">Market Prices</Link></li>
-              <li><Link href="/trade" className="text-sm text-muted-foreground hover:text-success transition-colors">Virtual Trading</Link></li>
-              <li><Link href="/portfolio" className="text-sm text-muted-foreground hover:text-success transition-colors">Portfolio Tracker</Link></li>
+              <li><Link href="/dashboard/trade" className="text-sm text-muted-foreground hover:text-success transition-colors">Virtual Trading</Link></li>
+              <li><Link href="/dashboard/portfolio" className="text-sm text-muted-foreground hover:text-success transition-colors">Portfolio Tracker</Link></li>
               <li><Link href="/leaderboard" className="text-sm text-muted-foreground hover:text-success transition-colors">Leaderboard</Link></li>
             </ul>
           </div>

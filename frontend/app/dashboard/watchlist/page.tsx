@@ -27,8 +27,8 @@ export default function WatchlistPage() {
 
   // For now, let's mock the "watched" state by taking a subset of prices
   // In a real scenario, this would come from a user's Firestore document
-  const watchlistIds = ["bitcoin", "ethereum", "solana", "cardano", "polkadot"];
-  const watchedAssets = Object.entries(prices).filter(([id]) => watchlistIds.includes(id));
+  const watchlistSymbols = ["BTC", "ETH", "SOL", "ADA"];
+  const watchedAssets = prices.filter((p) => watchlistSymbols.includes(p.symbol));
 
   return (
     <div className="space-y-8">
@@ -67,9 +67,9 @@ export default function WatchlistPage() {
             <div key={i} className="h-48 bg-secondary/20 rounded-[2rem] animate-pulse border border-border" />
           ))
         ) : watchedAssets.length > 0 ? (
-          watchedAssets.map(([id, data]: [string, any], idx) => (
+          watchedAssets.map((asset, idx) => (
             <motion.div
-              key={id}
+              key={asset.symbol}
               variants={fadeInUp}
               initial="initial"
               animate="animate"
@@ -82,11 +82,11 @@ export default function WatchlistPage() {
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/10 flex items-center justify-center font-bold text-sm text-primary">
-                    {data.symbol.toUpperCase()}
+                    {asset.symbol.slice(0, 2)}
                   </div>
                   <div>
-                    <h3 className="font-bold capitalize text-lg">{id}</h3>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest">{data.symbol}</p>
+                    <h3 className="font-bold capitalize text-lg">{asset.symbol}</h3>
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest">Crypto Asset</p>
                   </div>
                 </div>
                 <button className="p-2 text-muted-foreground hover:text-danger transition-colors rounded-lg hover:bg-danger/10">
@@ -99,17 +99,17 @@ export default function WatchlistPage() {
                   <div>
                     <p className="text-xs text-muted-foreground mb-1 uppercase font-bold tracking-tighter">Current Price</p>
                     <p className="text-2xl font-mono font-bold">
-                      ${data.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ${asset.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
-                  <div className={`flex items-center gap-1 text-sm font-bold px-2 py-1 rounded-lg ${data.price_change_percentage_24h >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
-                    {data.price_change_percentage_24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {Math.abs(data.price_change_percentage_24h).toFixed(2)}%
+                  <div className={`flex items-center gap-1 text-sm font-bold px-2 py-1 rounded-lg ${asset.change24h >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                    {asset.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {Math.abs(asset.change24h).toFixed(2)}%
                   </div>
                 </div>
 
                 <div className="pt-4 flex items-center gap-3">
-                  <Link href={`/trade?asset=${id}`} className="flex-1">
+                  <Link href={`/dashboard/trade?asset=${asset.symbol}`} className="flex-1">
                     <Button className="w-full gap-2 rounded-xl h-11">
                       Trade
                       <ArrowUpRight className="w-4 h-4" />

@@ -1,47 +1,67 @@
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-  updateProfile,
-  sendEmailVerification,
-  GoogleAuthProvider,
-  signInWithRedirect,
-  UserCredential
-} from "firebase/auth";
-import { auth } from "./firebase";
+import apiFetch from "./api";
 
-const googleProvider = new GoogleAuthProvider();
+export interface AuthUser {
+  _id: string;
+  email: string;
+  fullName?: string;
+  [key: string]: any;
+}
 
 export const authService = {
-  async login(email: string, password: string): Promise<UserCredential> {
-    return signInWithEmailAndPassword(auth, email, password);
+  async me(): Promise<AuthUser> {
+    const response = await apiFetch<{ user: AuthUser }>("/api/auth/me", {
+      method: "GET",
+    });
+    return response.data.user;
   },
 
-  async register(email: string, password: string, displayName?: string): Promise<UserCredential> {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    if (displayName && userCredential.user) {
-      await updateProfile(userCredential.user, { displayName });
-    }
-    if (userCredential.user) {
-      await sendEmailVerification(userCredential.user);
-    }
-    return userCredential;
+  async login(email: string, password: string): Promise<AuthUser> {
+    const response = await apiFetch<{ user: AuthUser }>("/api/auth/login", {
+      method: "POST",
+      data: { email, password },
+    });
+    return response.data.user;
   },
 
-  async signInWithGoogle(): Promise<void> {
-    return signInWithRedirect(auth, googleProvider);
+  async register(email: string, password: string, fullName?: string): Promise<AuthUser> {
+    const response = await apiFetch<{ user: AuthUser }>("/api/auth/register", {
+      method: "POST",
+      data: { email, fullName, password },
+    });
+    return response.data.user;
   },
 
   async logout(): Promise<void> {
-    return signOut(auth);
+    await apiFetch<void>("/api/auth/logout", {
+      method: "POST",
+    });
   },
 
-  async resetPassword(email: string): Promise<void> {
-    return sendPasswordResetEmail(auth, email);
+  async refresh(): Promise<void> {
+    await apiFetch<void>("/api/auth/refresh", {
+      method: "POST",
+    });
   },
 
-  async sendVerificationEmail(user: any): Promise<void> {
-    return sendEmailVerification(user);
-  }
+  async resendVerification(email?: string): Promise<void> {
+    await apiFetch<void>("/api/auth/resend-verification", {
+      method: "POST",
+      data: email ? { email } : undefined,
+    });
+  },
+
+  async forgotPassword(email: string): Promise<string | null> {
+    const response = await apiFetch<{ token: string | null }>("/api/auth/forgot-password", {
+      method: "POST",
+      data: { email },
+    });
+    return response.data.token ?? null;
+  },
+
+  async resetPassword(token: string, password: string): Promise<void> {
+    await apiFetch<void>("/api/auth/reset-password", {
+      method: "POST",
+      data: { token, password },
+    });
+  },
 };

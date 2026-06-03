@@ -49,6 +49,21 @@ router.post('/logout', authLimiter, controller.logout);
 router.post('/refresh', authLimiter, controller.refresh);
 
 /**
+ * @route GET /api/auth/verify-email
+ * @desc Verify a user's email address
+ * @access Public
+ * @query { token, next }
+ */
+router.get('/verify-email', authLimiter, controller.verifyEmail);
+
+/**
+ * @route POST /api/auth/resend-verification
+ * @desc Resend verification email
+ * @access Public
+ */
+router.post('/resend-verification', authLimiter, controller.resendVerification);
+
+/**
  * @route POST /api/auth/forgot-password
  * @desc Initiate forgot password flow
  * @access Public

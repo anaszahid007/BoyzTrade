@@ -1,15 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "@/lib/firebase";
-import { 
-  History, 
-  ArrowUpRight, 
-  ArrowDownRight, 
+import {
+  History,
+  ArrowUpRight,
+  ArrowDownRight,
   Calendar,
   Filter,
-  Download
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -20,12 +18,7 @@ export default function TransactionsPage() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const getTransactions = httpsCallable(functions, "getTransactions");
-        const result: any = await getTransactions();
-        setTransactions(result.data);
-      } catch (err) {
-        console.error("Error fetching transactions:", err);
-        // Mock data for UI demo
+        // No backend transaction endpoint yet; using demo data
         setTransactions([
           { id: "1", type: "BUY", asset: "BTC", quantity: 0.005, priceAtTrade: 62000, totalUsd: 310, createdAt: { _seconds: 1715414400 } },
           { id: "2", type: "SELL", asset: "ETH", quantity: 0.5, priceAtTrade: 3200, totalUsd: 1600, createdAt: { _seconds: 1715410800 } },
@@ -33,6 +26,8 @@ export default function TransactionsPage() {
           { id: "4", type: "BUY", asset: "BTC", quantity: 0.01, priceAtTrade: 60500, totalUsd: 605, createdAt: { _seconds: 1715396400 } },
           { id: "5", type: "SELL", asset: "DOGE", quantity: 1000, priceAtTrade: 0.16, totalUsd: 160, createdAt: { _seconds: 1715392800 } },
         ]);
+      } catch (err) {
+        console.error("Error loading demo transactions:", err);
       } finally {
         setLoading(false);
       }
@@ -44,11 +39,11 @@ export default function TransactionsPage() {
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "N/A";
     const date = new Date(timestamp._seconds * 1000);
-    return date.toLocaleString("en-US", { 
-      month: "short", 
-      day: "numeric", 
-      hour: "2-digit", 
-      minute: "2-digit" 
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -101,10 +96,11 @@ export default function TransactionsPage() {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <div className={`
-                        inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-                        ${tx.type === 'BUY' ? 'bg-success/10 text-success border border-success/20' : 'bg-danger/10 text-danger border border-danger/20'}
-                      `}>
+                      <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                        tx.type === 'BUY'
+                          ? 'bg-success/10 text-success border border-success/20'
+                          : 'bg-danger/10 text-danger border border-danger/20'
+                      }`}>
                         {tx.type === 'BUY' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
                         {tx.type}
                       </div>
@@ -117,12 +113,8 @@ export default function TransactionsPage() {
                         <span className="font-bold">{tx.asset}</span>
                       </div>
                     </td>
-                    <td className="px-8 py-6 text-right font-mono font-medium">
-                      {tx.quantity}
-                    </td>
-                    <td className="px-8 py-6 text-right font-mono text-muted-foreground">
-                      ${tx.priceAtTrade.toLocaleString()}
-                    </td>
+                    <td className="px-8 py-6 text-right font-mono font-medium">{tx.quantity}</td>
+                    <td className="px-8 py-6 text-right font-mono text-muted-foreground">${tx.priceAtTrade.toLocaleString()}</td>
                     <td className={`px-8 py-6 text-right font-bold text-lg ${tx.type === 'BUY' ? 'text-foreground' : 'text-success'}`}>
                       {tx.type === 'BUY' ? '-' : '+'}${tx.totalUsd.toLocaleString()}
                     </td>
@@ -141,10 +133,10 @@ export default function TransactionsPage() {
       </div>
 
       <div className="flex items-center justify-center gap-4">
-         <p className="text-sm text-muted-foreground italic flex items-center gap-2">
-           <History className="w-4 h-4" />
-           Showing last 20 transactions from your history.
-         </p>
+        <p className="text-sm text-muted-foreground italic flex items-center gap-2">
+          <History className="w-4 h-4" />
+          Showing last 20 transactions from your history.
+        </p>
       </div>
     </div>
   );

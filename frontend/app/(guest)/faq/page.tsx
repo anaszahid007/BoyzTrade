@@ -44,7 +44,7 @@ const faqs = [
   },
   {
     question: "How do I secure my virtual account?",
-    answer: "We use Firebase Authentication to secure your account. Your password is encrypted, and your trading data is private to you. We do not sell or share your data with third parties.",
+    answer: "We use backend authentication to secure your account. Your password is encrypted, and your trading data is private to you. We do not sell or share your data with third parties.",
     icon: HelpCircle
   }
 ];

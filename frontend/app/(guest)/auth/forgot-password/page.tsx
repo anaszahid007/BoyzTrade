@@ -3,9 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Mail, ArrowLeft, Loader2, CheckCircle2, TrendingUp } from "lucide-react";
-import { sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { authService } from "@/lib/auth";
 import { Button } from "@/components/ui/Button";
 
 export default function ForgotPasswordPage() {
@@ -20,7 +19,7 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      await authService.forgotPassword(email);
       setIsSent(true);
     } catch (err: any) {
       setError(err.message || "Failed to send reset email. Please check the address.");

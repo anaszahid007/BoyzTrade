@@ -3,43 +3,38 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authService } from "@/lib/auth";
-import { FirebaseError } from "firebase/app";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function useAuthActions() {
   const router = useRouter();
+  const { setUser } = useAuth();
   const [authLoading, setAuthLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAuthError = (err: unknown) => {
     console.error("Auth Error:", err);
-    if (err instanceof FirebaseError) {
-      switch (err.code) {
-        case "auth/email-already-in-use":
-          return "This email is already registered.";
-        case "auth/invalid-credential":
-        case "auth/user-not-found":
-        case "auth/wrong-password":
-          return "Invalid email or password.";
-        case "auth/weak-password":
-          return "Password should be at least 6 characters.";
-        case "auth/user-disabled":
-          return "This account has been disabled.";
-        default:
-          return "An error occurred. Please try again.";
-      }
+    const message = (err as any)?.message;
+    if (typeof message === "string" && message.length > 0) {
+      return message;
     }
-    return "An unexpected error occurred.";
+    return "An unexpected error occurred. Please try again.";
   };
 
   const login = async (data: any) => {
     setAuthLoading(true);
     setError(null);
     try {
-      await authService.login(data.email, data.password);
+      const user = await authService.login(data.email, data.password);
+      setUser(user);
       router.push("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
+      if (err.status === 403 && err.data?.requiresVerification) {
+        // Redirect to verification page if email not verified
+        const email = err.data.email || data.email;
+        router.push(`/auth/verification-sent?email=${encodeURIComponent(email)}`);
+        return;
+      }
       setError(handleAuthError(err));
     } finally {
       setAuthLoading(false);
@@ -50,12 +45,9 @@ export function useAuthActions() {
     setAuthLoading(true);
     setError(null);
     try {
-      const result = await authService.register(data.email, data.password, data.name);
-      if (result.user && !result.user.emailVerified) {
-        router.push("/auth/verification-sent");
-      } else {
-        router.push("/dashboard");
-      }
+      const user = await authService.register(data.email, data.password, data.name);
+      setUser(user);
+      router.push("/dashboard");
     } catch (err) {
       setError(handleAuthError(err));
     } finally {
@@ -65,6 +57,7 @@ export function useAuthActions() {
 
   const logout = async () => {
     setAuthLoading(true);
+    setError(null);
     try {
       await authService.logout();
       router.push("/auth/login");
@@ -75,27 +68,11 @@ export function useAuthActions() {
     }
   };
 
-  const signInWithGoogle = async () => {
-    setGoogleLoading(true);
-    setError(null);
-    try {
-      await authService.signInWithGoogle();
-      // Redirect flow will complete after Firebase redirects back to the app.
-    } catch (err) {
-      setError(handleAuthError(err));
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
-  const resendVerificationEmail = async () => {
+  const resendVerificationEmail = async (email?: string) => {
     setResendLoading(true);
     setError(null);
     try {
-      const { auth } = await import("@/lib/firebase");
-      if (auth.currentUser) {
-        await authService.sendVerificationEmail(auth.currentUser);
-      }
+      await authService.resendVerification(email);
     } catch (err) {
       setError(handleAuthError(err));
     } finally {
@@ -107,12 +84,10 @@ export function useAuthActions() {
     login,
     register,
     logout,
-    signInWithGoogle,
     resendVerificationEmail,
     authLoading,
-    googleLoading,
     resendLoading,
     error,
-    setError
+    setError,
   };
 }

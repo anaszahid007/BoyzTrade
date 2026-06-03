@@ -1,17 +1,25 @@
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import { createServer } from 'http';
 import app from './src/app.js';
+import envs from './src/config/envs.js';
+import { initSocket } from './src/socket.js';
+import { startPriceBroadcast } from './src/services/broadcast.service.js';
 
-dotenv.config();
+const PORT = envs.port;
+const MONGO_URI = envs.mongoUri;
 
-const PORT = process.env.PORT || 4000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/paper-trading';
+const httpServer = createServer(app);
+initSocket(httpServer);
 
 const start = async () => {
 	try {
 		await mongoose.connect(MONGO_URI, { autoIndex: true });
 		console.log('MongoDB connected');
-		app.listen(PORT, () => console.log(`Server running on port ${PORT}\nhttp://localhost:${PORT}`));
+		
+		// Start real-time broadcasting
+		startPriceBroadcast();
+		
+		httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}\nhttp://localhost:${PORT}`));
 	} catch (err) {
 		console.error('Failed to start server', err);
 		process.exit(1);

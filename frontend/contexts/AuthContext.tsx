@@ -1,102 +1,99 @@
 "use client"
 
-import { createContext, useState, useEffect, useContext, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { auth } from "../lib/firebase"
-import { authService } from "../lib/auth"
-import { getRedirectResult, onAuthStateChanged, User } from "firebase/auth"
-
+import { createContext, useState, useEffect, useContext } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { authService, AuthUser } from "@/lib/auth";
 
 interface AuthContextType {
-    user: User | null,
-    loading: boolean,
-    logout: () => Promise<void>,
-    refreshUser: () => Promise<void>
+  user: AuthUser | null;
+  loading: boolean;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  setUser: (user: AuthUser | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
-    user: null,
-    loading: true,
-    logout: async () => { },
-    refreshUser: async () => { }
+  user: null,
+  loading: true,
+  logout: async () => {},
+  refreshUser: async () => {},
+  setUser: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const router = useRouter();
-    const [user, setUser] = useState<User | null>(null)
-    const [loading, setLoading] = useState(true)
-    const authStateResolved = useRef(false)
-    const redirectResultResolved = useRef(false)
+  const router = useRouter();
+  const pathname = usePathname();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        let isMounted = true
+  // Initial load
+  useEffect(() => {
+    let isMounted = true;
 
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            if (!isMounted) return
-            // console.debug("AuthProvider onAuthStateChanged", { currentUser })
-            setUser(currentUser)
-            authStateResolved.current = true
-            if (redirectResultResolved.current) {
-                setLoading(false)
-            }
-        })
+    const loadUser = async () => {
+      try {
+        const currentUser = await authService.me();
+        if (isMounted) setUser(currentUser);
+      } catch (error) {
+        if (isMounted) setUser(null);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
 
-        getRedirectResult(auth)
-            .then((result) => {
-                if (!isMounted) return
-                // console.debug("AuthProvider getRedirectResult", { result })
-                if (result?.user) {
-                    if (!result.user.emailVerified) {
-                        router.replace("/auth/verification-sent")
-                    } else {
-                        router.replace("/dashboard")
-                    }
-                }
-            })
-            .catch((error) => {
-                // console.error("Google redirect sign-in error:", error)
-            })
-            .finally(() => {
-                if (!isMounted) return
-                redirectResultResolved.current = true
-                if (authStateResolved.current) {
-                    setLoading(false)
-                }
-            })
+    loadUser();
 
-        return () => {
-            isMounted = false
-            unsubscribe()
-        }
-    }, [router])
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-    async function refreshUser() {
-        if (auth.currentUser) {
-            await auth.currentUser.reload();
-            setUser({ ...auth.currentUser });
-        }
+  // Handle protected path changes
+  useEffect(() => {
+    const isProtectedPath = pathname?.startsWith("/dashboard") || 
+                            pathname?.startsWith("/auth/verification-sent") ||
+                            pathname?.startsWith("/auth/verified");
+
+    // Only attempt refresh if we don't have a user and we're not already loading.
+    // We should also check if we've already tried and failed to avoid loops.
+    // However, a simpler approach is to rely on the initial load and only
+    // trigger a refresh when explicitly needed.
+    
+    // For now, let's just ensure we don't loop by removing the automatic refresh
+    // on every path change if it's already failed.
+  }, [pathname]);
+
+  async function refreshUser() {
+    setLoading(true);
+    try {
+      const currentUser = await authService.me();
+      setUser(currentUser);
+    } catch (error) {
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    async function logout() {
-        try {
-            await authService.logout()
-        } catch (error) {
-            console.error("Error signing out:", error)
-        }
+  async function logout() {
+    try {
+      await authService.logout();
+      setUser(null);
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
     }
+  }
 
-    const value = { user, loading, logout, refreshUser }
+  const value = { user, loading, logout, refreshUser, setUser };
 
-    return <AuthContext.Provider value={value}>
-        {children}
-    </AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
-
 
 export const useAuth = () => {
-    const context = useContext(AuthContext)
-    if (context === undefined) {
-        throw new Error("useAuth must be used within an AuthProvider")
-    }
-    return context
-}
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

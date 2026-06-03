@@ -1,6 +1,6 @@
 // routes/asset.routes.js
 import express from 'express';
-import { getAssetPriceSymbol } from '../services/coingecko.service.js';
+import { getAssetPriceSymbol } from '../services/market.service.js';
 
 const router = express.Router();
 

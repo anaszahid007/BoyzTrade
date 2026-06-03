@@ -69,13 +69,13 @@ export default function AboutPage() {
               },
               { 
                 title: "Tech-Forward", 
-                desc: "Built with Next.js, Flutter, and Firebase for a seamless experience across web and mobile.", 
+                desc: "Built with Next.js, Flutter, and backend-powered services for a seamless experience across web and mobile.", 
                 icon: Cpu,
                 color: "brand-secondary"
               },
               { 
                 title: "Safe Environment", 
-                desc: "Your data is secure with Firebase Auth and all trades are virtual. Zero financial risk, always.", 
+                desc: "Your data is secure with backend authentication and all trades are virtual. Zero financial risk, always.", 
                 icon: ShieldCheck,
                 color: "success"
               }

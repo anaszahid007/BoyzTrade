@@ -1,4 +1,5 @@
 import ApiError from '../utils/ApiError.js';
+import envs from '../config/envs.js';
 
 export default (err, req, res, next) => {
   if (!err) return next();
@@ -8,6 +9,6 @@ export default (err, req, res, next) => {
     message: err.message || 'Internal Server Error'
   };
   if (err.details) payload.details = err.details;
-  if (process.env.NODE_ENV !== 'production' && err.stack) payload.stack = err.stack;
+  if (!envs.isProd && err.stack) payload.stack = err.stack;
   res.status(status).json(payload);
 };

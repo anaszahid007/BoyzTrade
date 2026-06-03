@@ -12,7 +12,8 @@ const UserSchema = new Schema(
     email: { type: String, required: true, unique: true, lowercase: true, index: true },
     fullName: { type: String, required: true, index: true },
     password: { type: String, required: true, select: false },
-    isEmailVerified: { type: Boolean, default: false }
+    isVerified: { type: Boolean, default: false },
+    role: { type: String, default: 'user' , enum: ['user', 'admin']}
   },
   { timestamps: true }
 );
