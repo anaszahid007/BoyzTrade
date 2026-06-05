@@ -54,7 +54,7 @@ export default function PortfolioPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight mb-0.5">Your <span className="gradient-text">Portfolio</span></h1>
+        <h1 className="text-2xl font-bold tracking-tight mb-0.5">Your <span className="text-sucess">Portfolio</span></h1>
         <p className="text-xs text-muted-foreground">Detailed overview of your virtual holdings and performance.</p>
       </div>
 

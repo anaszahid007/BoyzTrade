@@ -10,6 +10,7 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { tradeService } from "@/lib/trade";
 
 export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
@@ -18,16 +19,10 @@ export default function TransactionsPage() {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        // No backend transaction endpoint yet; using demo data
-        setTransactions([
-          { id: "1", type: "BUY", asset: "BTC", quantity: 0.005, priceAtTrade: 62000, totalUsd: 310, createdAt: { _seconds: 1715414400 } },
-          { id: "2", type: "SELL", asset: "ETH", quantity: 0.5, priceAtTrade: 3200, totalUsd: 1600, createdAt: { _seconds: 1715410800 } },
-          { id: "3", type: "BUY", asset: "SOL", quantity: 10, priceAtTrade: 140, totalUsd: 1400, createdAt: { _seconds: 1715407200 } },
-          { id: "4", type: "BUY", asset: "BTC", quantity: 0.01, priceAtTrade: 60500, totalUsd: 605, createdAt: { _seconds: 1715396400 } },
-          { id: "5", type: "SELL", asset: "DOGE", quantity: 1000, priceAtTrade: 0.16, totalUsd: 160, createdAt: { _seconds: 1715392800 } },
-        ]);
+        const data = await tradeService.getTradeHistory(1, 20);
+        setTransactions(data || []);
       } catch (err) {
-        console.error("Error loading demo transactions:", err);
+        console.error("Error loading transactions:", err);
       } finally {
         setLoading(false);
       }
@@ -36,9 +31,10 @@ export default function TransactionsPage() {
     fetchTransactions();
   }, []);
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return "N/A";
-    const date = new Date(timestamp._seconds * 1000);
+  const formatDate = (value: any) => {
+    if (!value) return "N/A";
+    // value may be ISO string or Date
+    const date = value._seconds ? new Date(value._seconds * 1000) : new Date(value);
     return date.toLocaleString("en-US", {
       month: "short",
       day: "numeric",

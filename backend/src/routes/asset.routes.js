@@ -1,45 +1,25 @@
 // routes/asset.routes.js
 import express from 'express';
-import { getAssetPriceSymbol } from '../services/market.service.js';
+import { getAllAssets, getAssetBySymbol } from '../controllers/asset.controller.js';
 
 const router = express.Router();
 
-// GET /api/assets - List all available assets
-router.get('/', async (req, res) => {
-    try {
 
-        const coins = await getAssetPriceSymbol('BTC');
+/**
+ * @route GET /api/assets
+ * @desc List all available assets with optional search and pagination
+ * @query q: Optional search query to filter assets by symbol or name (case-insensitive)
+*/
+router.get('/', getAllAssets);
 
-        return res.json({ success: true, data: coins });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message, status: 500 });
-    }
-});
 
-// // GET /api/assets/:symbol/price - Get real-time price of one asset
-// router.get('/:symbol/price', async (req, res) => {
-//   try {
-//     const { symbol } = req.params;
-//     const coins = await getSupportedCoins();
-//     const coin = coins.find(c => c.symbol === symbol.toUpperCase());
+/**
+ * @route GET /api/assets/:symbol
+ * @desc Get specific asset by symbol (or create if not exists)
+ * @param {string} symbol - The symbol of the asset to retrieve (e.g., BTC, ETH)
+ * @returns {object} Asset details or error message
+*/
+router.get('/:symbol', getAssetBySymbol);
 
-//     if (!coin) {
-//       return res.status(404).json({ success: false, message: 'Asset not found' });
-//     }
-
-//     const prices = await getPrices([coin.id]);
-
-//     res.json({
-//       success: true,
-//       data: {
-//         symbol: coin.symbol,
-//         current_price: prices[coin.id]?.inr || 0,
-//         price_change_24h: prices[coin.id]?.usd_24h_change || 0
-//       }
-//     });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// });
 
 export default router;

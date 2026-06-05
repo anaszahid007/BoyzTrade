@@ -14,6 +14,7 @@ import {
   Bell,
   Search,
   User as UserIcon,
+  ChevronLeft,
   ChevronRight
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -41,13 +42,13 @@ export default function DashboardLayout({
   const { user } = useAuth();
   const { portfolio } = usePortfolio();
   const { logout } = useAuthActions();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const activeItem = [...navItems, ...secondaryNavItems].find(item => item.href === pathname);
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-bg-dark text-foreground flex overflow-hidden">
+      <div className="h-screen bg-bg-dark text-foreground flex overflow-hidden">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
@@ -58,23 +59,26 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-card/80 backdrop-blur-xl border-r border-white/5 transition-all duration-500 ease-in-out lg:translate-x-0 lg:static
-        ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        fixed inset-y-0 left-0 z-50 w-72 h-screen max-h-screen bg-card/80 backdrop-blur-xl border-r border-white/5 transition-transform duration-500 ease-in-out overflow-hidden
+        ${isSidebarOpen ? "translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:max-h-screen lg:block" : "-translate-x-full lg:hidden"}
       `}>
-        <div className="h-full flex flex-col p-4">
+        <div className="h-full min-h-0 flex flex-col p-4 overflow-hidden">
           {/* Logo Section */}
-          <Link href="/dashboard" className="flex items-center gap-2.5 px-2 mb-8 group transition-all">
+          <div className="flex items-center justify-between gap-2.5 px-2 mb-8">
+          <Link href="/dashboard" className="flex items-center gap-2.5 group transition-all">
             <div className="p-2 bg-primary/10 rounded-xl neon-glow-blue border border-primary/20 group-hover:scale-105 transition-transform duration-300">
               <TrendingUp className="w-5 h-5 text-primary" />
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold tracking-tight leading-none">Boyz<span className="text-primary">Trade</span></span>
-              <span className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5 font-bold">Pro Terminal</span>
+              <span className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5 font-bold">Terminal</span>
             </div>
           </Link>
+        
+          </div>
 
           {/* Navigation Section */}
-          <div className="flex-1 space-y-6 overflow-y-auto no-scrollbar py-1">
+          <div className="flex-1 min-h-0 space-y-6 overflow-y-auto sidebar-scrollbar py-1">
             <nav className="space-y-1">
               <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-4 mb-3 opacity-40">Main Menu</p>
               {navItems.map((item) => {
@@ -181,10 +185,15 @@ export default function DashboardLayout({
         <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 lg:px-10 backdrop-blur-md bg-bg-dark/50 sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button 
-              className="p-2 lg:hidden bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
-              onClick={() => setIsSidebarOpen(true)}
+              className="p-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+              onClick={() => setIsSidebarOpen(prev => !prev)}
+              aria-label={isSidebarOpen ? "Close sidebar" : "Open sidebar"}
             >
-              <Menu className="w-5 h-5" />
+              {isSidebarOpen ? (
+                <ChevronLeft className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
             
             <div className="flex flex-col">
@@ -223,7 +232,7 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8 relative z-10">
+        <div className="flex-1 overflow-y-auto sidebar-scrollbar p-6 lg:p-8 relative z-10">
           {children}
         </div>
       </main>

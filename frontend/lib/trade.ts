@@ -20,6 +20,17 @@ export interface PortfolioData {
   holdings: PortfolioHolding[];
 }
 
+export interface AssetSummary {
+  symbol: string;
+  name: string;
+  market_type: string;
+  current_price: number;
+  logo?: string;
+  market_cap: number;
+  price_change_24h: number;
+  last_updated: string;
+}
+
 export const tradeService = {
   async getPortfolio(): Promise<PortfolioData> {
     const response = await apiFetch<PortfolioData>("/api/trade/portfolio", {
@@ -41,6 +52,34 @@ export const tradeService = {
       method: "POST",
       data: { symbol, quantity },
     });
+    return response.data;
+  },
+
+  async getAssets(query?: string, page = 1, perPage = 100): Promise<AssetSummary[]> {
+    const queryString = query
+      ? `?q=${encodeURIComponent(query)}&page=${page}&perPage=${perPage}`
+      : `?page=${page}&perPage=${perPage}`;
+
+    const response = await apiFetch<AssetSummary[]>(`/api/assets${queryString}`, {
+      method: "GET",
+    });
+
+    return response.data;
+  },
+
+  async getAssetBySymbol(symbol: string): Promise<AssetSummary> {
+    const response = await apiFetch<AssetSummary>(`/api/assets/${symbol.toUpperCase()}`, {
+      method: "GET",
+    });
+
+    return response.data;
+  },
+
+  async getTradeHistory(page = 1, perPage = 20): Promise<any[]> {
+    const response = await apiFetch<any>(`/api/trade/history?page=${page}&perPage=${perPage}`, {
+      method: "GET",
+    });
+
     return response.data;
   },
 };

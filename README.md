@@ -1,74 +1,115 @@
-# 💹 Boyz Trade - Virtual Crypto Simulator
+# 💹 Boyz Trade
 
-![Hero Banner](/public/videos/hero_animated_video.mp4) 
-*(Animated Preview)*
+**Boyz Trade** is a full-stack virtual trading simulator for crypto markets, built with a Next.js frontend and an Express/Mongo backend. The app includes realtime sockets, JWT auth, portfolio management, watchlists, and Redis for session/cache support.
 
-**Boyz Trade** is a high-fidelity, risk-free cryptocurrency trading simulator designed to empower the next generation of traders. Built with a "Flight Simulator" philosophy, it allows users to master market dynamics using real-time data and virtual funds.
+## 🚀 What’s Included
 
-## 🚀 Key Features
-
-- **Live Market Terminal**: Real-time price tracking powered by CoinGecko API, featuring the top 50+ cryptocurrencies.
-- **Virtual Portfolio**: Start with $10,000 in virtual USD to practice trading strategies without financial risk.
-- **Neon Terminal UI**: A premium, dark-mode aesthetic with glassmorphism, glowing accents, and high-performance animations.
-- **Responsive Design**: Fully optimized for Desktop, Tablet, and Mobile with a dedicated side-drawer navigation.
-- **Interactive Charts**: Path-following price indicators and dynamic data visualizations built with Framer Motion.
+- `frontend/` — Next.js 16 application using React 19
+- `backend/` — Express API with MongoDB, Socket.IO, Redis, and JWT authentication
+- `docker-compose.yml` — Start frontend, backend, MongoDB, and Redis in one command
+- `backend/src/config/envs.js` — centralized configuration for MongoDB, Redis, JWT, cookies, mail, and URLs
 
 ## 🛠 Tech Stack
 
-- **Frontend**: [Next.js 15](https://nextjs.org/) (App Router), React 19
-- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/), Vanilla CSS for custom neon effects
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Backend/Auth**: [Firebase](https://firebase.google.com/) (Authentication, Firestore, Cloud Functions)
-- **Data Source**: [CoinGecko API](https://www.coingecko.com/en/api)
-- **Icons**: [Lucide React](https://lucide.dev/)
+- Frontend: Next.js 16, React 19, Tailwind CSS 4, Framer Motion
+- Backend: Node.js, Express, Mongoose, Socket.IO, ioredis
+- Database: MongoDB
+- Cache / session store: Redis
+- Auth: JWT access/refresh tokens with cookie support
+- API: Native `fetch` in frontend, REST API in backend
 
-## 📂 Project Structure
+## 📁 Root Project Structure
 
-```bash
-├── app/                  # Next.js App Router (Guest & Dashboard routes)
-│   ├── (guest)/          # Landing, About, Market, FAQ, Legal pages
-│   ├── (dashboard)/      # Protected trading terminal and portfolio
-│   └── globals.css       # Core design system and neon utilities
-├── components/           # Reusable UI components
-│   ├── ui/               # Atomic components (Buttons, Inputs, etc.)
-│   └── HeroChart.tsx     # Custom SVG animation component
-├── hooks/                # Custom React hooks (usePrices, etc.)
-├── lib/                  # Service initializations (Firebase, API clients)
-└── public/               # Static assets (Videos, Logos)
+```text
+├── backend/              # Express backend API + socket services
+│   ├── src/              # backend source code
+│   ├── package.json
+│   ├── Dockerfile
+│   └── .dockerignore
+├── frontend/             # Next.js frontend application
+│   ├── app/
+│   ├── components/
+│   ├── package.json
+│   ├── Dockerfile
+│   └── .dockerignore
+├── docker-compose.yml    # Compose stack for backend, frontend, MongoDB, Redis
+└── README.md             # Project overview and setup guide
 ```
 
-## 🚥 Getting Started
+## 🚀 Run with Docker
 
-### 1. Prerequisites
-- Node.js 20+ 
-- npm or pnpm
+From the project root:
 
-### 2. Installation
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/boyztrade.git
+docker compose up --build
+```
 
-# Install dependencies
+Then open:
+
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:4000`
+
+Stop the stack with:
+
+```bash
+docker compose down
+```
+
+## 🔧 Local Development
+
+### Backend
+
+```bash
+cd backend
 npm install
-```
-
-### 3. Environment Setup
-Create a `.env.local` file in the root and add your Firebase and API configuration:
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=your_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_id
-# Add other Firebase variables...
-```
-
-### 4. Run Development Server
-```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) to see the result.
 
-## 🛡️ Mission
-To democratize crypto trading by providing a safe, educational, and high-fidelity environment where everyone can learn to navigate the markets before risking real capital.
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## 🌐 Environment Variables
+
+### Backend
+Create `backend/.env` or set these variables in your environment:
+
+```env
+PORT=4000
+MONGO_URI=mongodb://localhost:27017/paper-trading
+REDIS_HOST=localhost
+REDIS_PORT=6379
+JWT_ACCESS_SECRET=your_access_secret
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_ACCESS_EXPIRES=15m
+JWT_REFRESH_EXPIRES=30d
+BACKEND_URL=http://localhost:4000
+CLIENT_URL=http://localhost:3000
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_email
+EMAIL_PASS=your_password
+COOKIE_SECURE=false
+COOKIE_DOMAIN=
+```
+
+### Frontend
+Create `frontend/.env.local` or set this variable in your environment:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+## 📌 Notes
+
+- The backend now uses MongoDB and Redis; Firebase is not part of this repository.
+- Docker Compose includes Redis and MongoDB for local development.
+- Keep secret env values out of source control.
 
 ---
-Built with 💚 by the **Boyz Trade Team**.
+
+Built with 💚 by the Boyz Trade team.

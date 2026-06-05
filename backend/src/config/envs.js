@@ -18,6 +18,9 @@ const {
     EMAIL_PASS,
     BACKEND_URL,
     CLIENT_URL,
+    REDIS_HOST,
+    REDIS_PORT,
+    REDIS_URL,
 } = process.env;
 
 const isProd = NODE_ENV === 'production';
@@ -50,6 +53,12 @@ export default {
         httpOnly: true,
         sameSite: isProd ? 'none' : 'lax',
         domain: COOKIE_DOMAIN || undefined
+    },
+
+    redis: {
+        host: REDIS_HOST || 'localhost',
+        port: Number(REDIS_PORT) || 6379,
+        url: REDIS_URL || `redis://${REDIS_HOST || 'localhost'}:${REDIS_PORT || 6379}`
     },
 
     isProd,

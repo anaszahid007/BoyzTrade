@@ -8,7 +8,7 @@ import {validate} from '../middleware/validate.middleware.js';
 import { validateTrade } from '../validators/trade.validator.js';
 
 // Controllers
-import { buyAsset, sellAsset, getPortfolio } from '../controllers/trade.controller.js';
+import { buyAsset, sellAsset, getPortfolio, getTradeHistory } from '../controllers/trade.controller.js';
 
 
 const router = express.Router();
@@ -40,5 +40,12 @@ router.post('/sell', validate(validateTrade), sellAsset);
  * @access Private
  */
 router.get('/portfolio', getPortfolio);
+
+/**
+ * @route GET /api/trade/history
+ * @desc Get user's trade history
+ * @access Private
+ */
+router.get('/history', getTradeHistory);
 
 export default router;

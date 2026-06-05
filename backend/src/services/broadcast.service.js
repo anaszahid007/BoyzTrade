@@ -1,4 +1,4 @@
-import { getAllMarketsAssets } from "./market.service.js";
+import { getAllMarketsAssets, updateAssetsCurrentPrices } from "./market.service.js";
 import { broadcast } from "../socket.js";
 
 let broadcastInterval;
@@ -9,6 +9,7 @@ export const startPriceBroadcast = () => {
   const fetchAndBroadcast = async () => {
     try {
       const assets = await getAllMarketsAssets();
+      await updateAssetsCurrentPrices(assets);
       broadcast("price-update", assets);
       console.log("Broadcasted price updates to all clients");
     } catch (error) {

@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { usePrices } from "@/hooks/usePrices";
 import { usePortfolio } from "@/hooks/usePortfolio";
+import { tradeService, AssetSummary } from "@/lib/trade";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -35,13 +37,34 @@ const item = {
 export default function DashboardPage() {
   const { prices, loading: pricesLoading, refresh: refreshPrices } = usePrices();
   const { portfolio, loading: portfolioLoading, refresh: refreshPortfolio } = usePortfolio();
+  const [assets, setAssets] = useState<AssetSummary[]>([]);
+  const [loadingAssets, setLoadingAssets] = useState(false);
 
-  const loading = pricesLoading || portfolioLoading;
+  const loading = pricesLoading || portfolioLoading || loadingAssets;
 
   const refreshAll = () => {
     refreshPrices();
     refreshPortfolio();
+    loadDashboardAssets();
   };
+
+  async function loadDashboardAssets() {
+    setLoadingAssets(true);
+    try {
+      const data = await tradeService.getAssets("", 1, 8);
+      setAssets(data);
+    } catch (error) {
+      console.error("Failed to load dashboard assets", error);
+    } finally {
+      setLoadingAssets(false);
+    }
+  }
+
+  useEffect(() => {
+    loadDashboardAssets();
+  }, []);
+
+  const router = useRouter();
 
   const stats = {
     balance: portfolio?.cash_balance ?? 0,
@@ -145,39 +168,57 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {prices.map((asset) => (
-                  <tr key={asset.symbol} className="hover:bg-white/[0.01] transition-all group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-secondary/50 flex items-center justify-center font-bold text-xs border border-white/5 group-hover:border-primary/30 transition-all shadow-md group-hover:scale-105">
-                          {asset.symbol.slice(0, 2)}
-                        </div>
-                        <div>
-                          <p className="font-bold text-base leading-none mb-1">{asset.symbol}</p>
-                          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">Crypto Asset</p>
-                        </div>
-                      </div>
+                {loadingAssets ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">
+                      Loading dashboard assets...
                     </td>
-                    <td className="px-6 py-4 text-right font-mono text-lg font-bold tracking-tighter">
-                      ${asset.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </tr>
+                ) : assets.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">
+                      No dashboard assets available.
                     </td>
-                    <td className={`px-6 py-4 text-right font-bold`}>
-                      <div className={`flex items-center justify-end gap-1 text-xs ${asset.change24h >= 0 ? 'text-success' : 'text-danger'}`}>
-                        <div className={`p-0.5 rounded-md ${asset.change24h >= 0 ? 'bg-success/10' : 'bg-danger/10'}`}>
-                          {asset.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  </tr>
+                ) : (
+                  assets.map((asset) => (
+                    <tr
+                      key={asset.symbol}
+                      onClick={() => router.push(`/dashboard/trade/${asset.symbol}`)}
+                      className="group cursor-pointer hover:bg-white/[0.01] transition-all"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          {asset.logo ? (
+                            <img src={asset.logo} alt={asset.symbol} className="w-9 h-9 rounded-xl object-cover" />
+                          ) : (
+                            <div className="w-9 h-9 rounded-xl bg-white/5 grid place-items-center text-xs font-bold text-muted-foreground">{asset.symbol.slice(0, 2)}</div>
+                          )}
+                          <div>
+                            <p className="font-bold text-base leading-none mb-1">{asset.symbol}</p>
+                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-50">{asset.name}</p>
+                          </div>
                         </div>
-                        {Math.abs(asset.change24h).toFixed(2)}%
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <Link href={`/dashboard/trade?asset=${asset.symbol}`}>
+                      </td>
+                      <td className="px-6 py-4 text-right font-mono text-lg font-bold tracking-tighter">
+                        ${asset.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td className={`px-6 py-4 text-right font-bold ${asset.price_change_24h >= 0 ? 'text-success' : 'text-danger'}`}>
+                        <div className={`flex items-center justify-end gap-1 text-xs ${asset.price_change_24h >= 0 ? 'text-success' : 'text-danger'}`}>
+                          <div className={`p-0.5 rounded-md ${asset.price_change_24h >= 0 ? 'bg-success/10' : 'bg-danger/10'}`}>
+                            {asset.price_change_24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          </div>
+                          {Math.abs(asset.price_change_24h).toFixed(2)}%
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
                         <Button variant="primary" className="py-2 px-4 text-xs font-bold h-auto rounded-lg shadow-md shadow-primary/5 hover:shadow-primary/10 transition-all group-hover:scale-105">
                           Trade
                         </Button>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

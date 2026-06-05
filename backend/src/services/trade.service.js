@@ -11,7 +11,7 @@ import PortfolioHolding from '../models/portfolioHolding.model.js';
 import WalletTransaction from '../models/walletTransaction.model.js';
 
 // Services
-import { getAssetPriceSymbol } from './market.service.js';
+import { getAssetPriceSymbol, getAssetPricesByIds } from './market.service.js';
 import { emitToUser } from '../socket.js';
 
 
@@ -237,10 +237,17 @@ export const getPortfolio = async (userId) => {
   }
 
   const holdings = await PortfolioHolding.find({ portfolioId: portfolio._id }).populate({ path: 'assetId' });
+  const assetIds = holdings
+    .map((h) => h.assetId?.assetId)
+    .filter((id) => typeof id === 'string' && id.length > 0);
+
+  const livePrices = await getAssetPricesByIds(assetIds);
+
   let totalCurrentValue = 0;
-  const holdingsWithDetails = holdings.map(h => {
+  const holdingsWithDetails = holdings.map((h) => {
     const asset = h.assetId || {};
-    const currentPrice = asset.currentPrice || 0;
+    const livePrice = asset.assetId ? livePrices[asset.assetId]?.usd : undefined;
+    const currentPrice = typeof livePrice === 'number' ? livePrice : asset.currentPrice || 0;
     const currentValue = currentPrice * h.quantity;
     const invested = (h.averageBuyPrice || 0) * h.quantity;
     const profitLoss = currentValue - invested;
@@ -277,4 +284,41 @@ export const getPortfolio = async (userId) => {
   };
 };
 
-export default { buyAsset, sellAsset, getPortfolio };
+/**
+ * @desc Retrieve paginated trade history for a user
+ * @param {String} userId
+ * @param {Number} page
+ * @param {Number} perPage
+ * @returns {Object} - { data: trades[], status, message }
+ */
+export const getTradeHistory = async (userId, page = 1, perPage = 20) => {
+  const skip = (Math.max(1, page) - 1) * perPage;
+  const trades = await Trade.find({ userId })
+    .sort({ executedAt: -1 })
+    .skip(skip)
+    .limit(perPage)
+    .populate({ path: 'assetId' })
+    .lean();
+
+  const mapped = trades.map((t) => {
+    const asset = t.assetId || {};
+    return {
+      id: t._id.toString(),
+      type: t.tradeType,
+      asset: asset.symbol || null,
+      name: asset.name || null,
+      quantity: t.quantity,
+      priceAtTrade: t.price,
+      totalUsd: t.totalAmount,
+      executedAt: t.executedAt || t.createdAt || t.updatedAt
+    };
+  });
+
+  return {
+    data: mapped,
+    status: 200,
+    message: 'Trade history retrieved successfully'
+  };
+};
+
+export default { buyAsset, sellAsset, getPortfolio, getTradeHistory };
