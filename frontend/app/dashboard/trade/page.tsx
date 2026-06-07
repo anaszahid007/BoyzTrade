@@ -3,18 +3,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { usePortfolio } from "@/hooks/usePortfolio";
-import { tradeService, AssetSummary } from "@/lib/trade";
+import { useSocket } from "@/contexts/SocketContext";
+import { tradeService, AssetSummary } from "@/services/trade";
 import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 import {
-  TrendingUp,
-  Wallet,
-  CheckCircle2,
-  AlertCircle,
   ArrowUpRight,
   Search,
 } from "lucide-react";
-import Link from "next/link";
 
 export default function TradePage() {
   const searchParams = useSearchParams();
@@ -22,6 +17,7 @@ export default function TradePage() {
   const initialAsset = searchParams.get("asset") || "BTC";
 
   const { portfolio } = usePortfolio();
+  const { socket } = useSocket();
   const [assets, setAssets] = useState<AssetSummary[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(false);
   const [search, setSearch] = useState("");
@@ -65,6 +61,33 @@ export default function TradePage() {
   useEffect(() => {
     loadAssets("");
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePriceUpdate = (updates: AssetSummary[]) => {
+      setAssets((current) => {
+        if (!current.length) return current;
+        const updateMap = new Map(updates.map((asset) => [asset.symbol, asset]));
+        return current.map((asset) => {
+          const updated = updateMap.get(asset.symbol);
+          if (!updated) return asset;
+          return {
+            ...asset,
+            current_price: updated.current_price ?? asset.current_price,
+            price_change_24h: updated.price_change_24h ?? asset.price_change_24h,
+            market_cap: updated.market_cap ?? asset.market_cap,
+            last_updated: updated.last_updated ?? asset.last_updated,
+          };
+        });
+      });
+    };
+
+    socket.on("price-update", handlePriceUpdate);
+    return () => {
+      socket.off("price-update", handlePriceUpdate);
+    };
+  }, [socket]);
 
   const assetHolding = portfolio?.holdings.find((h) => h.symbol === selectedSymbol);
   const currentPrice = selectedAsset?.current_price || 0;

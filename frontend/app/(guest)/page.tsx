@@ -218,7 +218,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-2 gap-4">
             {[
-              { value: "30s", label: "Update Rate", icon: Timer },
+              { value: "60s", label: "Update Rate", icon: Timer },
               { value: "5+", label: "Top Assets", icon: TrendingUp },
               { value: "Free", label: "Always Virtual", icon: ShieldCheck },
               { value: "Global", label: "Trading Access", icon: Globe }

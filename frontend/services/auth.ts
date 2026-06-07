@@ -1,4 +1,4 @@
-import apiFetch from "./api";
+import apiFetch from "@/utils/api";
 
 export interface AuthUser {
   _id: string;

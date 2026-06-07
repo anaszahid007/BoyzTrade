@@ -1,17 +1,18 @@
 "use client";
 
 import React from "react";
-import { 
-  Wallet, 
-  TrendingUp, 
-  TrendingDown, 
-  PieChart, 
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  PieChart,
   ArrowUpRight,
   Info
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import Link from "next/link";
+import router from "next/router";
 
 export default function PortfolioPage() {
   const { portfolio, loading, error } = usePortfolio();
@@ -61,53 +62,53 @@ export default function PortfolioPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Main Stats Card */}
         <div className="lg:col-span-2 glass p-6 rounded-[1.5rem] border border-white/5 relative overflow-hidden flex flex-col justify-between">
-           <div className="absolute top-[-10%] right-[-10%] w-48 h-48 bg-primary/10 blur-[80px] rounded-full" />
-           
-           <div className="space-y-0.5 relative z-10">
-             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Net Worth</p>
-             <h2 className="text-4xl font-bold tracking-tighter">${uiPortfolio.totalValue.toLocaleString()}</h2>
-           </div>
+          <div className="absolute top-[-10%] right-[-10%] w-48 h-48 bg-primary/10 blur-[80px] rounded-full" />
 
-           <div className="grid grid-cols-2 gap-3 mt-8 relative z-10">
-             <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                <p className="text-[9px] text-muted-foreground mb-0.5 uppercase font-bold">Cash Balance</p>
-                <p className="text-lg font-bold">${uiPortfolio.balance.toLocaleString()}</p>
-             </div>
-             <div className="p-3 bg-white/5 rounded-xl border border-white/5">
-                <p className="text-[9px] text-muted-foreground mb-0.5 uppercase font-bold">Total P&L</p>
-                <p className={`text-lg font-bold ${uiPortfolio.overallPnL >= 0 ? 'text-success' : 'text-danger'}`}>
-                  {uiPortfolio.overallPnL >= 0 ? '+' : ''}${Math.abs(uiPortfolio.overallPnL).toLocaleString()}
-                </p>
-             </div>
-           </div>
+          <div className="space-y-0.5 relative z-10">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Net Worth</p>
+            <h2 className="text-4xl font-bold tracking-tighter">${uiPortfolio.totalValue.toLocaleString()}</h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mt-8 relative z-10">
+            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+              <p className="text-[9px] text-muted-foreground mb-0.5 uppercase font-bold">Cash Balance</p>
+              <p className="text-lg font-bold">${uiPortfolio.balance.toLocaleString()}</p>
+            </div>
+            <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+              <p className="text-[9px] text-muted-foreground mb-0.5 uppercase font-bold">Total P&L</p>
+              <p className={`text-lg font-bold ${uiPortfolio.overallPnL >= 0 ? 'text-success' : 'text-danger'}`}>
+                {uiPortfolio.overallPnL >= 0 ? '+' : ''}${Math.abs(uiPortfolio.overallPnL).toLocaleString()}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Breakdown Summary */}
         <div className="glass p-6 rounded-[1.5rem] border border-white/5 space-y-4">
-           <h3 className="text-sm font-bold flex items-center gap-2">
-             <PieChart className="w-4 h-4 text-primary" />
-             Asset Allocation
-           </h3>
-           <div className="space-y-3">
-             {uiPortfolio.holdings.map((h: any) => (
-               <div key={h.symbol} className="space-y-1">
-                 <div className="flex justify-between text-[11px]">
-                   <span className="font-bold">{h.symbol}</span>
-                   <span className="text-muted-foreground">{((h.quantity * h.currentPrice / uiPortfolio.totalValue) * 100).toFixed(1)}%</span>
-                 </div>
-                 <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                   <div 
-                    className="h-full bg-primary neon-glow-blue" 
+          <h3 className="text-sm font-bold flex items-center gap-2">
+            <PieChart className="w-4 h-4 text-primary" />
+            Asset Allocation
+          </h3>
+          <div className="space-y-3">
+            {uiPortfolio.holdings.map((h: any) => (
+              <div key={h.symbol} className="space-y-1">
+                <div className="flex justify-between text-[11px]">
+                  <span className="font-bold">{h.symbol}</span>
+                  <span className="text-muted-foreground">{((h.quantity * h.currentPrice / uiPortfolio.totalValue) * 100).toFixed(1)}%</span>
+                </div>
+                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary neon-glow-blue"
                     style={{ width: `${(h.quantity * h.currentPrice / uiPortfolio.totalValue) * 100}%` }}
-                   />
-                 </div>
-               </div>
-             ))}
-           </div>
-           <div className="pt-3 border-t border-white/5 flex items-center gap-2">
-              <Info className="w-3.5 h-3.5 text-muted-foreground opacity-50" />
-              <p className="text-[9px] text-muted-foreground font-medium italic">Portfolio rebalances automatically based on live prices.</p>
-           </div>
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="pt-3 border-t border-white/5 flex items-center gap-2">
+            <Info className="w-3.5 h-3.5 text-muted-foreground opacity-50" />
+            <p className="text-[9px] text-muted-foreground font-medium italic">Portfolio rebalances automatically based on live prices.</p>
+          </div>
         </div>
       </div>
 
@@ -141,10 +142,11 @@ export default function PortfolioPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <Link href={`/dashboard/trade?asset=${h.symbol}`}>
-                        <Button variant="ghost" className="p-1.5 h-auto rounded-lg hover:bg-primary/10 hover:text-primary transition-all">
-                           <ArrowUpRight className="w-4 h-4" />
-                        </Button>
+                      <Link href={`/dashboard/trade/${h.symbol}`}>
+                        <button className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 hover:bg-primary/20 px-3 py-1 text-xs text-muted-foreground hover:text-primary transition-colors">
+                          Trade
+                          <ArrowUpRight className="w-3 h-3" />
+                        </button>
                       </Link>
                     </td>
                   </tr>

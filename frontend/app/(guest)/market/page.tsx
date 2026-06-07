@@ -46,7 +46,7 @@ export default function MarketPage() {
             </motion.div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Market <span className="text-success drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]">Overview</span></h1>
             <p className="text-muted-foreground max-w-xl">
-              Track real-time prices for the most popular cryptocurrencies. Powered by CoinGecko API with updates every 30 seconds.
+              Track real-time prices for the most popular cryptocurrencies. Powered by our backend with live updates every minute.
             </p>
           </div>
 
@@ -121,16 +121,16 @@ export default function MarketPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {loading && !Object.keys(prices).length ? (
+                  {loading && prices.length === 0 ? (
                     [1, 2, 3, 4, 5].map((i) => (
                       <tr key={i} className="animate-pulse">
                         <td colSpan={6} className="px-8 py-6 h-20 bg-white/[0.01]" />
                       </tr>
                     ))
                   ) : (
-                    Object.entries(prices).map(([id, data]: [string, any], idx) => (
+                    prices.map((asset, idx) => (
                       <motion.tr 
-                        key={id}
+                        key={asset.symbol}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: idx * 0.05 }}
@@ -138,29 +138,33 @@ export default function MarketPage() {
                       >
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center font-bold text-xs">
-                              {data.symbol.toUpperCase()}
-                            </div>
+                            {asset.logo ? (
+                              <img src={asset.logo} alt={asset.symbol} className="w-10 h-10 rounded-xl object-cover" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center font-bold text-xs">
+                                {asset.symbol}
+                              </div>
+                            )}
                             <div>
-                              <p className="font-bold capitalize">{id}</p>
-                              <p className="text-[10px] text-muted-foreground uppercase">{data.symbol}</p>
+                              <p className="font-bold">{asset.name}</p>
+                              <p className="text-[10px] text-muted-foreground uppercase">{asset.symbol}</p>
                             </div>
                           </div>
                         </td>
                         <td className="px-8 py-6 font-mono font-bold">
-                          ${data.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ${asset.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="px-8 py-6">
-                          <span className={`flex items-center gap-1 text-sm font-bold ${data.price_change_percentage_24h >= 0 ? 'text-success' : 'text-danger'}`}>
-                            {data.price_change_percentage_24h >= 0 ? '+' : ''}
-                            {data.price_change_percentage_24h.toFixed(2)}%
+                          <span className={`flex items-center gap-1 text-sm font-bold ${asset.price_change_24h >= 0 ? 'text-success' : 'text-danger'}`}>
+                            {asset.price_change_24h >= 0 ? '+' : ''}
+                            {asset.price_change_24h.toFixed(2)}%
                           </span>
                         </td>
                         <td className="px-8 py-6 text-sm text-muted-foreground">
-                          ${(data.total_volume / 1000000000).toFixed(2)}B
+                          —
                         </td>
                         <td className="px-8 py-6 text-sm text-muted-foreground">
-                          ${(data.market_cap / 1000000000).toFixed(2)}B
+                          ${(asset.market_cap / 1000000000).toFixed(2)}B
                         </td>
                         <td className="px-8 py-6 text-right">
                           <Link href={`/auth/register`}>

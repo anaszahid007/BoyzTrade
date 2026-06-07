@@ -1,80 +1,69 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSocket } from "@/contexts/SocketContext";
+import { tradeService, AssetSummary } from "@/services/trade";
 
-export interface PriceData {
-  symbol: string;
-  price: number;
-  change24h: number;
+interface UsePricesOptions {
+  perPage?: number;
 }
 
-const ids = [
-  { symbol: "BTC", id: "bitcoin" },
-  { symbol: "ETH", id: "ethereum" },
-  { symbol: "SOL", id: "solana" },
-  { symbol: "DOGE", id: "dogecoin" },
-  { symbol: "ADA", id: "cardano" },
-];
+const mergePriceUpdates = (
+  current: AssetSummary[],
+  updates: AssetSummary[]
+): AssetSummary[] => {
+  if (!updates.length) return current;
+  if (!current.length) return updates;
 
-export function usePrices() {
+  const updateMap = new Map(updates.map((asset) => [asset.symbol, asset]));
+
+  return current.map((asset) => {
+    const updated = updateMap.get(asset.symbol);
+    if (!updated) return asset;
+    return {
+      ...asset,
+      current_price: updated.current_price ?? asset.current_price,
+      price_change_24h: updated.price_change_24h ?? asset.price_change_24h,
+      market_cap: updated.market_cap ?? asset.market_cap,
+      last_updated: updated.last_updated ?? asset.last_updated,
+    };
+  });
+};
+
+export function usePrices({ perPage = 50 }: UsePricesOptions = {}) {
   const { socket } = useSocket();
-  const [prices, setPrices] = useState<PriceData[]>([]);
+  const [prices, setPrices] = useState<AssetSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPrices = async () => {
+  const fetchPrices = useCallback(async () => {
     try {
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids
-        .map((item) => item.id)
-        .join(",")}&vs_currencies=usd&include_24hr_change=true`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      const formattedPrices = ids.map((asset) => ({
-        symbol: asset.symbol,
-        price: data[asset.id]?.usd ?? 0,
-        change24h: Number(data[asset.id]?.usd_24h_change?.toFixed(2) ?? 0),
-      }));
-
-      setPrices(formattedPrices);
+      setLoading(true);
+      const data = await tradeService.getAssets("", 1, perPage);
+      setPrices(data);
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error fetching prices:", err);
       setError("Failed to fetch live prices.");
-      setPrices([
-        { symbol: "BTC", price: 65432.1, change24h: 2.45 },
-        { symbol: "ETH", price: 3456.78, change24h: -1.2 },
-        { symbol: "SOL", price: 145.2, change24h: 5.67 },
-        { symbol: "DOGE", price: 0.154, change24h: -0.45 },
-        { symbol: "ADA", price: 0.456, change24h: 1.1 },
-      ]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [perPage]);
 
   useEffect(() => {
     fetchPrices();
+  }, [fetchPrices]);
 
-    if (socket) {
-      socket.on("price-update", (assets: any[]) => {
-        const formattedPrices = ids.map((asset) => {
-          const match = assets.find((a) => a.symbol === asset.symbol);
-          return {
-            symbol: asset.symbol,
-            price: match?.current_price || 0,
-            change24h: match?.price_change_24h || 0,
-          };
-        });
-        setPrices(formattedPrices);
-      });
-    }
+  useEffect(() => {
+    if (!socket) return;
 
+    const handlePriceUpdate = (updates: AssetSummary[]) => {
+      setPrices((current) => mergePriceUpdates(current, updates));
+    };
+
+    socket.on("price-update", handlePriceUpdate);
     return () => {
-      if (socket) {
-        socket.off("price-update");
-      }
+      socket.off("price-update", handlePriceUpdate);
     };
   }, [socket]);
 

@@ -204,14 +204,24 @@ export const logout = asyncHandler(async (req, res) => {
  */
 export const refresh = asyncHandler(async (req, res) => {
   const raw = req.cookies?.refreshToken || req.body?.refreshToken;
-  if (!raw) throw new ApiError(401, 'No refresh token');
+  if (!raw) {
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
+    throw new ApiError(401, 'No refresh token');
+  }
 
   // Verify refresh token exists and is not expired
   const tokenHash = hashToken(raw);
   const stored = await RefreshToken.findOne({ tokenHash });
-  if (!stored) throw new ApiError(401, 'Invalid refresh token');
+  if (!stored) {
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
+    throw new ApiError(401, 'Invalid refresh token');
+  }
   if (stored.expiresAt < new Date()) {
     await RefreshToken.deleteOne({ _id: stored._id });
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
     throw new ApiError(401, 'Refresh token expired');
   }
 

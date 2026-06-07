@@ -29,7 +29,7 @@ const faqs = [
   },
   {
     question: "Where do the crypto prices come from?",
-    answer: "Our prices are powered by the CoinGecko API. We fetch real-time market data for the top cryptocurrencies every 30 seconds to ensure your simulation is as close to reality as possible.",
+    answer: "Our prices are powered by the CoinGecko API through our backend. We refresh market data every minute and push live updates to your dashboard via WebSocket so your simulation stays close to reality.",
     icon: RefreshCw
   },
   {

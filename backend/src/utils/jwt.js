@@ -3,7 +3,7 @@ import envs from '../config/envs.js';
 
 const JWT_ACCESS_SECRET = envs.jwt.access.secret || 'change-me-access';
 const JWT_REFRESH_SECRET = envs.jwt.refresh.secret || 'change-me-refresh';
-const JWT_ACCESS_EXPIRES = envs.jwt.access.expiresIn || '15m';
+const JWT_ACCESS_EXPIRES = envs.jwt.access.expiresIn || '7d';
 const JWT_REFRESH_EXPIRES = envs.jwt.refresh.expiresIn || '30d';
 
 /**

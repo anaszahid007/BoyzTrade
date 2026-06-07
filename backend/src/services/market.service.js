@@ -1,74 +1,63 @@
 import axios from "axios";
 import ApiError from "../utils/ApiError.js";
 import Asset from "../models/asset.model.js";
-import redisClient from "../config/redis.js";
+import { getCachedValue, setCachedValue, CACHE_TTL } from "../utils/redisCache.js";
 
 // CoinGecko API base URL
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
-const ASSET_CACHE_TTL = 60 * 60; // 1 hour
-const MARKET_ASSETS_TTL = 60 * 5; // 5 minutes
 
-// Get cached value from Redis
-const getCachedValue = async (key) => {
-    try {
-        const value = await redisClient.get(key);
-        if (!value) return null;
-        return JSON.parse(value);
-    } catch (error) {
-        console.warn(`Redis GET failed for ${key}:`, error.message);
-        return null;
-    }
+const formatMarketAssets = (coins) =>
+    coins.map((coin) => ({
+        symbol: coin.symbol.toUpperCase(),
+        name: coin.name,
+        market_type: 'crypto',
+        current_price: coin.current_price,
+        logo: coin.image,
+        market_cap: coin.market_cap,
+        price_change_24h: coin.price_change_percentage_24h,
+        last_updated: coin.last_updated,
+    }));
+
+const fetchMarketAssetsFromApi = async (page, perPage) => {
+    const coinsList = await axios.get(`${COINGECKO_API}/coins/markets`, {
+        params: {
+            vs_currency: 'usd',
+            order: 'market_cap_desc',
+            sparkline: false,
+            page,
+            per_page: perPage,
+        },
+    });
+
+    return formatMarketAssets(coinsList.data);
 };
-
-// Set value in Redis cache with TTL
-const setCachedValue = async (key, value, ttlSeconds) => {
-    try {
-        await redisClient.set(key, JSON.stringify(value), "EX", ttlSeconds);
-    } catch (error) {
-        console.warn(`Redis SET failed for ${key}:`, error.message);
-    }
-};
-
 
 /**
  * @desc Get the list of All Markets Assets
  * @param {number} page - The page number for pagination (default: 1)
  * @param {number} perPage - The number of items per page for pagination (default: 50)
+ * @param {object} options
+ * @param {boolean} options.forceRefresh - Bypass cache and fetch fresh prices (used by broadcast)
  * @returns {Promise<Array>} - A promise resolving to an array of assets with real-time price data
 */
-export const getAllMarketsAssets = async (page = 1, perPage = 50) => {
-    try {
-        // 1. coin list of all gecko coins
-        const coinsList = await axios.get(`${COINGECKO_API}/coins/markets`, {
-            params: {
-                vs_currency: 'usd',
-                order: 'market_cap_desc',
-                sparkline: false,
-                page,
-                per_page: perPage,
-            }
-        });
+export const getAllMarketsAssets = async (page = 1, perPage = 50, { forceRefresh = false } = {}) => {
+    const cacheKey = `assets:list:${page}:${perPage}`;
 
-        // 2. Format karo apne schema ke hisaab se
-        const cacheKey = `assets:list:${page}:${perPage}`;
+    if (!forceRefresh) {
         const cached = await getCachedValue(cacheKey);
         if (cached) return cached;
+    }
 
-        const assets = coinsList.data.map(coin => ({
-            symbol: coin.symbol.toUpperCase(),
-            name: coin.name,
-            market_type: 'crypto',
-            current_price: coin.current_price,
-            logo: coin.image,
-            market_cap: coin.market_cap,
-            price_change_24h: coin.price_change_percentage_24h,
-            last_updated: coin.last_updated
-        }));
-
-        await setCachedValue(cacheKey, assets, MARKET_ASSETS_TTL);
+    try {
+        const assets = await fetchMarketAssetsFromApi(page, perPage);
+        await setCachedValue(cacheKey, assets, CACHE_TTL.MARKET_ASSETS);
         return assets;
-
     } catch (error) {
+        const stale = await getCachedValue(cacheKey);
+        if (stale) {
+            console.warn(`CoinGecko fetch failed, serving stale cache for ${cacheKey}:`, error.message);
+            return stale;
+        }
         throw new ApiError(500, 'Failed to fetch assets with real-time price');
     }
 }
@@ -134,7 +123,12 @@ export const getAssetPricesByIds = async (assetIds) => {
             return {};
         }
 
-        const ids = assetIds.join(",");
+        const ids = [...new Set(assetIds)].sort().join(",");
+        const cacheKey = `assetPricesByIds:${ids}`;
+
+        const cached = await getCachedValue(cacheKey);
+        if (cached) return cached;
+
         const response = await axios.get(`${COINGECKO_API}/simple/price`, {
             params: {
                 ids,
@@ -142,9 +136,15 @@ export const getAssetPricesByIds = async (assetIds) => {
             }
         });
 
-        return response.data || {};
+        const data = response.data || {};
+        if (Object.keys(data).length > 0) {
+            await setCachedValue(cacheKey, data, CACHE_TTL.MARKET_ASSETS);
+        }
+
+        return data;
     } catch (error) {
-        throw new ApiError(500, 'Failed to fetch real-time prices for assets');
+        console.warn(`CoinGecko rate limit / error in getAssetPricesByIds: ${error.message}`);
+        return {}; // Fallback to {} so the portfolio uses DB prices instead of crashing
     }
 };
 
@@ -237,7 +237,7 @@ export const getOrCreateAssetBySymbol = async (symbol) => {
                     await dbAsset.save();
                 }
 
-                await setCachedValue(cacheKey, assetResponse, ASSET_CACHE_TTL);
+                await setCachedValue(cacheKey, assetResponse, CACHE_TTL.ASSET_DETAIL);
                 return assetResponse;
             } catch (err) {
                 console.error('Error fetching real-time data for existing asset:', err.message);
@@ -252,7 +252,7 @@ export const getOrCreateAssetBySymbol = async (symbol) => {
                     last_updated: dbAsset.updatedAt?.toISOString()
                 };
 
-                await setCachedValue(cacheKey, fallbackResponse, ASSET_CACHE_TTL);
+                await setCachedValue(cacheKey, fallbackResponse, CACHE_TTL.ASSET_DETAIL);
                 return fallbackResponse;
             }
         }
@@ -274,7 +274,7 @@ export const getOrCreateAssetBySymbol = async (symbol) => {
                 throw new ApiError(404, `Asset with symbol ${symbol} not found in CoinGecko`);
             }
 
-            await setCachedValue(searchCacheKey, coin, ASSET_CACHE_TTL);
+            await setCachedValue(searchCacheKey, coin, CACHE_TTL.ASSET_SEARCH);
         }
 
         // 3. Fetch market data for the coin
@@ -310,7 +310,7 @@ export const getOrCreateAssetBySymbol = async (symbol) => {
             last_updated: new Date().toISOString()
         };
 
-        await setCachedValue(cacheKey, assetResponse, ASSET_CACHE_TTL);
+        await setCachedValue(cacheKey, assetResponse, CACHE_TTL.ASSET_DETAIL);
         return assetResponse;
 
     } catch (error) {

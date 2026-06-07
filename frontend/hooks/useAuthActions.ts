@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authService } from "@/lib/auth";
+import { authService } from "@/services/auth";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useAuthActions() {
@@ -60,6 +60,7 @@ export function useAuthActions() {
     setError(null);
     try {
       await authService.logout();
+      setUser(null);
       router.push("/auth/login");
     } catch (err) {
       setError(handleAuthError(err));

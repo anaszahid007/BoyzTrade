@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { tradeService, PortfolioData } from "@/lib/trade";
+import { tradeService, PortfolioData } from "@/services/trade";
 import { useSocket } from "@/contexts/SocketContext";
 
 export function usePortfolio() {

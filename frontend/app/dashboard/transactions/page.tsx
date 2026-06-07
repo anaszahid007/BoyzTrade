@@ -10,7 +10,7 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { tradeService } from "@/lib/trade";
+import { tradeService } from "@/services/trade";
 
 export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
@@ -73,13 +73,14 @@ export default function TransactionsPage() {
                 <th className="px-8 py-5 text-right">Quantity</th>
                 <th className="px-8 py-5 text-right">Price</th>
                 <th className="px-8 py-5 text-right">Total USD</th>
+                <th className="px-8 py-5 text-right">Profit/Loss</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={6} className="px-8 py-6 h-16 bg-white/2" />
+                    <td colSpan={7} className="px-8 py-6 h-16 bg-white/2" />
                   </tr>
                 ))
               ) : transactions.length > 0 ? (
@@ -88,7 +89,7 @@ export default function TransactionsPage() {
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-3 text-muted-foreground">
                         <Calendar className="w-4 h-4" />
-                        <span className="text-sm font-medium">{formatDate(tx.createdAt)}</span>
+                        <span className="text-sm font-medium">{formatDate(tx.executedAt)}</span>
                       </div>
                     </td>
                     <td className="px-8 py-6">
@@ -114,11 +115,20 @@ export default function TransactionsPage() {
                     <td className={`px-8 py-6 text-right font-bold text-lg ${tx.type === 'BUY' ? 'text-foreground' : 'text-success'}`}>
                       {tx.type === 'BUY' ? '-' : '+'}${tx.totalUsd.toLocaleString()}
                     </td>
+                    <td className={`px-8 py-6 text-right font-bold`}>
+                      {tx.pnl != null ? (
+                        <div className={`inline-flex items-center gap-1 ${tx.pnl >= 0 ? 'text-success' : 'text-danger'}`}>
+                          {tx.pnl >= 0 ? '+' : '-'}${Math.abs(tx.pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-8 py-20 text-center text-muted-foreground italic">
+                  <td colSpan={7} className="px-8 py-20 text-center text-muted-foreground italic">
                     No transactions found yet. Start trading to see your history!
                   </td>
                 </tr>

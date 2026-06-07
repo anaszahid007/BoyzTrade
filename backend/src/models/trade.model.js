@@ -14,7 +14,8 @@ const TradeSchema = new Schema(
     price: { type: Number, required: true },
     totalAmount: { type: Number, required: true },
     status: { type: String, enum: ['COMPLETED', 'FAILED', 'PENDING'], default: 'PENDING' },
-    executedAt: { type: Date }
+    executedAt: { type: Date },
+    realizedPnL: { type: Number, default: null }
   },
   { timestamps: true }
 );

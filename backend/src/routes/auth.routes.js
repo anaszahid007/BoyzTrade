@@ -1,7 +1,9 @@
 import { Router } from 'express';
 
-// Controllers
-import * as controller from '../controllers/auth.controller.js';
+// Middlewares
+import { protect } from '../middleware/auth.middleware.js';
+import { authLimiter } from '../middleware/rateLimiter.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
 
 // Validators
 import {
@@ -11,10 +13,9 @@ import {
     resetPasswordSchema
 } from '../validators/auth.validator.js';
 
-// Middlewares
-import { protect } from '../middleware/auth.middleware.js';
-import { authLimiter } from '../middleware/rateLimiter.js';
-import { validate } from '../middleware/validate.middleware.js';
+// Controllers
+import * as controller from '../controllers/auth.controller.js';
+
 
 const router = Router();
 

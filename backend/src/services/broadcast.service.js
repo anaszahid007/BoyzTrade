@@ -1,4 +1,5 @@
 import { getAllMarketsAssets, updateAssetsCurrentPrices } from "./market.service.js";
+import { BROADCAST_INTERVAL_MS } from "../utils/redisCache.js";
 import { broadcast } from "../socket.js";
 
 let broadcastInterval;
@@ -8,7 +9,7 @@ export const startPriceBroadcast = () => {
 
   const fetchAndBroadcast = async () => {
     try {
-      const assets = await getAllMarketsAssets();
+      const assets = await getAllMarketsAssets(1, 50, { forceRefresh: true });
       await updateAssetsCurrentPrices(assets);
       broadcast("price-update", assets);
       console.log("Broadcasted price updates to all clients");
@@ -17,11 +18,8 @@ export const startPriceBroadcast = () => {
     }
   };
 
-  // Initial fetch
   fetchAndBroadcast();
-
-  // Set interval (30 seconds)
-  broadcastInterval = setInterval(fetchAndBroadcast, 30000);
+  broadcastInterval = setInterval(fetchAndBroadcast, BROADCAST_INTERVAL_MS);
 };
 
 export const stopPriceBroadcast = () => {

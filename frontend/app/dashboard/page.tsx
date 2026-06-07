@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { usePrices } from "@/hooks/usePrices";
 import { usePortfolio } from "@/hooks/usePortfolio";
-import { tradeService, AssetSummary } from "@/lib/trade";
 import { motion } from "framer-motion";
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  ArrowUpRight, 
-  PlusCircle, 
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  ArrowUpRight,
+  PlusCircle,
   RefreshCcw,
   LayoutDashboard,
   ArrowRight
@@ -35,34 +34,15 @@ const item = {
 };
 
 export default function DashboardPage() {
-  const { prices, loading: pricesLoading, refresh: refreshPrices } = usePrices();
+  const { prices: assets, loading: pricesLoading, refresh: refreshPrices } = usePrices({ perPage: 8 });
   const { portfolio, loading: portfolioLoading, refresh: refreshPortfolio } = usePortfolio();
-  const [assets, setAssets] = useState<AssetSummary[]>([]);
-  const [loadingAssets, setLoadingAssets] = useState(false);
 
-  const loading = pricesLoading || portfolioLoading || loadingAssets;
+  const loading = pricesLoading || portfolioLoading;
 
   const refreshAll = () => {
     refreshPrices();
     refreshPortfolio();
-    loadDashboardAssets();
   };
-
-  async function loadDashboardAssets() {
-    setLoadingAssets(true);
-    try {
-      const data = await tradeService.getAssets("", 1, 8);
-      setAssets(data);
-    } catch (error) {
-      console.error("Failed to load dashboard assets", error);
-    } finally {
-      setLoadingAssets(false);
-    }
-  }
-
-  useEffect(() => {
-    loadDashboardAssets();
-  }, []);
 
   const router = useRouter();
 
@@ -74,7 +54,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial="hidden"
       animate="show"
       variants={container}
@@ -99,47 +79,47 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="glass p-5 rounded-[1.5rem] border border-white/5 space-y-4 neon-glow-blue relative overflow-hidden group hover:scale-[1.01] transition-all duration-500">
-           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
-              <DollarSign className="w-20 h-20" />
-           </div>
-           <div className="space-y-0.5 relative z-10">
-             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Available Balance</p>
-             <h2 className="text-3xl font-bold tracking-tighter">${stats.balance.toLocaleString()}</h2>
-           </div>
-           <div className="flex items-center gap-1.5 text-success text-[9px] font-bold bg-success/10 w-fit px-2 py-1 rounded-full border border-success/20">
-              <PlusCircle className="w-3 h-3" />
-              <span>VIRTUAL FUNDS</span>
-           </div>
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
+            <DollarSign className="w-20 h-20" />
+          </div>
+          <div className="space-y-0.5 relative z-10">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Available Balance</p>
+            <h2 className="text-3xl font-bold tracking-tighter">${stats.balance.toLocaleString()}</h2>
+          </div>
+          <div className="flex items-center gap-1.5 text-success text-[9px] font-bold bg-success/10 w-fit px-2 py-1 rounded-full border border-success/20">
+            <PlusCircle className="w-3 h-3" />
+            <span>VIRTUAL FUNDS</span>
+          </div>
         </div>
 
         <div className="glass p-5 rounded-[1.5rem] border border-white/5 space-y-4 relative overflow-hidden group hover:scale-[1.01] transition-all duration-500">
-           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <ArrowUpRight className="w-20 h-20 text-primary" />
-           </div>
-           <div className="space-y-0.5 relative z-10">
-             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Total Portfolio Value</p>
-             <h2 className="text-3xl font-bold tracking-tighter">${stats.totalValue.toLocaleString()}</h2>
-           </div>
-           <div className="flex items-center gap-1.5 text-primary text-[9px] font-bold bg-primary/10 w-fit px-2 py-1 rounded-full border border-primary/20">
-              <ArrowUpRight className="w-3 h-3" />
-              <span>NET EQUITY</span>
-           </div>
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            <ArrowUpRight className="w-20 h-20 text-primary" />
+          </div>
+          <div className="space-y-0.5 relative z-10">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Total Portfolio Value</p>
+            <h2 className="text-3xl font-bold tracking-tighter">${stats.totalValue.toLocaleString()}</h2>
+          </div>
+          <div className="flex items-center gap-1.5 text-primary text-[9px] font-bold bg-primary/10 w-fit px-2 py-1 rounded-full border border-primary/20">
+            <ArrowUpRight className="w-3 h-3" />
+            <span>NET EQUITY</span>
+          </div>
         </div>
 
         <div className={`glass p-5 rounded-[1.5rem] border border-white/5 space-y-4 neon-glow-${Number(stats.pnl) >= 0 ? 'green' : 'red'} relative overflow-hidden group hover:scale-[1.01] transition-all duration-500`}>
-           <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              {Number(stats.pnl) >= 0 ? <TrendingUp className="w-20 h-20 text-success" /> : <TrendingDown className="w-20 h-20 text-danger" />}
-           </div>
-           <div className="space-y-0.5 relative z-10">
-             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Overall Profit/Loss</p>
-             <h2 className={`text-3xl font-bold tracking-tighter ${Number(stats.pnl) >= 0 ? 'text-success' : 'text-danger'}`}>
-               {Number(stats.pnl) >= 0 ? '+' : ''}${Math.abs(Number(stats.pnl)).toLocaleString()}
-             </h2>
-           </div>
-           <div className={`flex items-center gap-1.5 text-[9px] font-bold w-fit px-2 py-1 rounded-full border ${Number(stats.pnl) >= 0 ? 'text-success bg-success/10 border-success/20' : 'text-danger bg-danger/10 border-danger/20'}`}>
-              {Number(stats.pnl) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              <span>{stats.pnlPercent}% RETURN</span>
-           </div>
+          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+            {Number(stats.pnl) >= 0 ? <TrendingUp className="w-20 h-20 text-success" /> : <TrendingDown className="w-20 h-20 text-danger" />}
+          </div>
+          <div className="space-y-0.5 relative z-10">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Overall Profit/Loss</p>
+            <h2 className={`text-3xl font-bold tracking-tighter ${Number(stats.pnl) >= 0 ? 'text-success' : 'text-danger'}`}>
+              {Number(stats.pnl) >= 0 ? '+' : ''}${Math.abs(Number(stats.pnl)).toLocaleString()}
+            </h2>
+          </div>
+          <div className={`flex items-center gap-1.5 text-[9px] font-bold w-fit px-2 py-1 rounded-full border ${Number(stats.pnl) >= 0 ? 'text-success bg-success/10 border-success/20' : 'text-danger bg-danger/10 border-danger/20'}`}>
+            {Number(stats.pnl) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            <span>{stats.pnlPercent}% RETURN</span>
+          </div>
         </div>
       </motion.div>
 
@@ -155,7 +135,7 @@ export default function DashboardPage() {
             <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
-        
+
         <div className="glass rounded-[1.5rem] border border-white/5 overflow-hidden shadow-xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -168,7 +148,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {loadingAssets ? (
+                {pricesLoading ? (
                   <tr>
                     <td colSpan={4} className="px-6 py-8 text-center text-sm text-muted-foreground">
                       Loading dashboard assets...
@@ -212,9 +192,17 @@ export default function DashboardPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <Button variant="primary" className="py-2 px-4 text-xs font-bold h-auto rounded-lg shadow-md shadow-primary/5 hover:shadow-primary/10 transition-all group-hover:scale-105">
+                        {/* <Button variant="primary" className="py-2 px-4 text-xs font-bold h-auto rounded-lg shadow-md shadow-primary/5 hover:shadow-primary/10 transition-all group-hover:scale-105">
                           Trade
-                        </Button>
+                        </Button> */}
+
+                        <button
+                          onClick={() => router.push(`/dashboard/trade/${asset.symbol}`)}
+                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 hover:bg-primary/20 px-3 py-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          Trade
+                          <ArrowUpRight className="w-3 h-3" />
+                        </button>
                       </td>
                     </tr>
                   ))

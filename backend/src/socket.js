@@ -4,9 +4,21 @@ import envs from "./config/envs.js";
 let io;
 
 export const initSocket = (server) => {
+  // Support comma-separated list of allowed origins e.g. "http://localhost:3000,https://xxx.ngrok-free.dev"
+  const allowedOrigins = envs.clientUrl
+    .split(",")
+    .map((o) => o.trim())
+    .filter(Boolean);
+
   io = new Server(server, {
     cors: {
-      origin: envs.clientUrl,
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`CORS: origin '${origin}' not allowed`));
+        }
+      },
       methods: ["GET", "POST"],
       credentials: true,
     },

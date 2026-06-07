@@ -99,12 +99,12 @@ export default function WatchlistPage() {
                   <div>
                     <p className="text-xs text-muted-foreground mb-1 uppercase font-bold tracking-tighter">Current Price</p>
                     <p className="text-2xl font-mono font-bold">
-                      ${asset.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ${asset.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </p>
                   </div>
-                  <div className={`flex items-center gap-1 text-sm font-bold px-2 py-1 rounded-lg ${asset.change24h >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
-                    {asset.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {Math.abs(asset.change24h).toFixed(2)}%
+                  <div className={`flex items-center gap-1 text-sm font-bold px-2 py-1 rounded-lg ${asset.price_change_24h >= 0 ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                    {asset.price_change_24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {Math.abs(asset.price_change_24h).toFixed(2)}%
                   </div>
                 </div>
 
@@ -152,21 +152,21 @@ export default function WatchlistPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {Object.entries(prices).slice(5, 10).map(([id, data]: [string, any]) => (
-                  <tr key={id} className="hover:bg-white/[0.01] transition-colors">
+                {prices.slice(5, 10).map((asset) => (
+                  <tr key={asset.symbol} className="hover:bg-white/[0.01] transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-[10px] font-bold uppercase">
-                          {data.symbol}
+                          {asset.symbol}
                         </div>
-                        <span className="font-bold capitalize text-sm">{id}</span>
+                        <span className="font-bold text-sm">{asset.name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 font-mono text-sm">
-                      ${data.current_price.toLocaleString()}
+                      ${asset.current_price.toLocaleString()}
                     </td>
-                    <td className={`px-6 py-4 text-sm font-bold ${data.price_change_percentage_24h >= 0 ? 'text-success' : 'text-danger'}`}>
-                      {data.price_change_percentage_24h.toFixed(2)}%
+                    <td className={`px-6 py-4 text-sm font-bold ${asset.price_change_24h >= 0 ? 'text-success' : 'text-danger'}`}>
+                      {asset.price_change_24h.toFixed(2)}%
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button className="p-2 text-muted-foreground hover:text-primary transition-colors">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { 
@@ -43,6 +43,16 @@ export default function DashboardLayout({
   const { portfolio } = usePortfolio();
   const { logout } = useAuthActions();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSidebarOpen(window.innerWidth >= 1024);
+    };
+    
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   const activeItem = [...navItems, ...secondaryNavItems].find(item => item.href === pathname);
 
@@ -158,10 +168,6 @@ export default function DashboardLayout({
                 </div>
               </div>
               <div className="h-[1px] bg-white/5 my-2" />
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="text-muted-foreground font-medium">Balance</span>
-                <span className="text-success font-mono font-bold">${portfolio?.cash_balance?.toLocaleString() || "0.00"}</span>
-              </div>
             </div>
 
             <button

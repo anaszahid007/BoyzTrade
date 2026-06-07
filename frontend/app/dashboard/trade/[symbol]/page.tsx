@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { usePortfolio } from "@/hooks/usePortfolio";
 import { useSocket } from "@/contexts/SocketContext";
-import { tradeService, AssetSummary } from "@/lib/trade";
+import { tradeService, AssetSummary } from "@/services/trade";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import {
@@ -18,7 +18,20 @@ import {
   Zap,
   Info,
 } from "lucide-react";
-import Link from "next/link";
+
+const formatPrice = (price: number) => {
+  if (!price) return "0.00";
+  if (price < 0.01) {
+    return price.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 8,
+    });
+  }
+  return price.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
 
 export default function AssetTradeDetailPage() {
   const router = useRouter();
@@ -190,10 +203,7 @@ export default function AssetTradeDetailPage() {
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Market Price</p>
                   <h2 className="text-5xl font-bold">
-                    ${currentPrice.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    ${formatPrice(currentPrice)}
                   </h2>
                 </div>
                 <div
@@ -219,7 +229,7 @@ export default function AssetTradeDetailPage() {
                   Real-time chart integration coming soon
                   <br />
                   <span className="text-xs text-muted-foreground/50">
-                    Current Price: ${currentPrice.toFixed(2)}
+                    Current Price: ${formatPrice(currentPrice)}
                   </span>
                 </p>
               </div>
@@ -282,7 +292,7 @@ export default function AssetTradeDetailPage() {
                   Current Price
                 </p>
                 <p className="text-lg font-bold font-mono">
-                  ${currentPrice.toFixed(2)}
+                  ${formatPrice(currentPrice)}
                 </p>
               </div>
               <div>
@@ -298,9 +308,9 @@ export default function AssetTradeDetailPage() {
         </div>
 
         {/* Right Section - Trade Form */}
-        <div className="space-y-6">
+        <div className="space-y-6 sticky top-6 h-fit">
           {/* Trade Card */}
-          <div className="glass p-8 rounded-4xl border border-white/5 sticky top-6">
+          <div className="glass p-8 rounded-4xl border border-white/5">
             <form onSubmit={handleTrade} className="space-y-6">
               {/* Buy/Sell Toggle */}
               <div className="flex gap-2 bg-secondary/50 rounded-3xl p-1 border border-border/50">
@@ -396,7 +406,7 @@ export default function AssetTradeDetailPage() {
                 <div className="flex justify-between items-center text-xs text-muted-foreground">
                   <span>Price per {symbol}</span>
                   <span className="font-mono">
-                    ${currentPrice.toFixed(2)}
+                    ${formatPrice(currentPrice)}
                   </span>
                 </div>
                 <div className="h-px bg-white/5" />

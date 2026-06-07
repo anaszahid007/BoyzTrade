@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
-import { authService } from "@/lib/auth";
+import { authService } from "@/services/auth";
 import { Button } from "@/components/ui/Button";
 
 export default function ForgotPasswordPage() {

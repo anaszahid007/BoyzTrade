@@ -61,7 +61,7 @@ const runInTransaction = async (work) => {
 /**
  * @desc Buy an asset and update portfolio and wallet accordingly
  * @param {String} userId - ID of the user making the trade
- * @param {Object} tradeData - Trade details including symbol and quantity
+ * @param {Object} { symbol, quantity } - Trade details including symbol and quantity
  * @returns {Object} - Details of the executed trade
  * @throws {ApiError} - Throws error if asset not found, insufficient balance, or any other issue during transaction
 */
@@ -144,7 +144,7 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
 /**
  * @desc Sell an asset and update portfolio and wallet accordingly
  * @param {String} userId - ID of the user making the trade
- * @param {Object} tradeData - Trade details including symbol and quantity
+ * @param {Object} { symbol, quantity } - Trade details including symbol and quantity
  * @returns {Object} - Details of the executed trade
  * @throws {ApiError} - Throws error if asset not found, insufficient holdings, or any other issue during transaction
 */
@@ -165,6 +165,7 @@ export const sellAsset = async (userId, { symbol, quantity }) => {
 
     const totalSellValue = currentPrice * quantity;
     const balanceBefore = portfolio.totalBalance;
+    const realizedPnL = totalSellValue - (holding.averageBuyPrice * quantity);
 
     if (holding.quantity === quantity) {
       await holding.deleteOne({ session });
@@ -181,7 +182,8 @@ export const sellAsset = async (userId, { symbol, quantity }) => {
       price: currentPrice,
       totalAmount: totalSellValue,
       status: 'COMPLETED',
-      executedAt: new Date()
+      executedAt: new Date(),
+      realizedPnL
     });
     await trade.save({ session });
 
@@ -310,7 +312,8 @@ export const getTradeHistory = async (userId, page = 1, perPage = 20) => {
       quantity: t.quantity,
       priceAtTrade: t.price,
       totalUsd: t.totalAmount,
-      executedAt: t.executedAt || t.createdAt || t.updatedAt
+      executedAt: t.executedAt || t.createdAt || t.updatedAt,
+      pnl: t.realizedPnL
     };
   });
 
