@@ -49,7 +49,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="glass p-8 rounded-[2.5rem] space-y-6 border border-white/10 shadow-2xl"
+          className="p-8 rounded-[2.5rem] space-y-6 border border-white/10 shadow-2xl"
         >
           {(error || Object.keys(errors).length > 0) && (
             <div className="p-4 bg-danger/10 border border-danger/20 rounded-2xl text-danger text-sm text-center">
@@ -78,6 +78,7 @@ export default function LoginPage() {
               <Link href="/auth/forgot-password" className="text-[11px] text-muted-foreground hover:text-success transition-colors">Forgot Password?</Link>
             </div>
             <Input
+              label="Password"
               type="password"
               icon={Lock}
               placeholder="••••••••"
