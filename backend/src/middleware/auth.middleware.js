@@ -20,3 +20,19 @@ export async function protect(req, res, next) {
         next(err.name === 'JsonWebTokenError' ? new ApiError(401, 'Invalid token') : err);
     }
 };
+
+/**
+ * Express middleware to restrict access to specific roles
+ */
+export function requireRole(...roles) {
+    return (req, res, next) => {
+        if (!req.user) {
+            return next(new ApiError(401, 'Unauthorized'));
+        }
+        if (!roles.includes(req.user.role)) {
+            return next(new ApiError(403, 'Forbidden: Insufficient permissions'));
+        }
+        next();
+    };
+}
+

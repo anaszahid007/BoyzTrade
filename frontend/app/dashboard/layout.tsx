@@ -21,6 +21,7 @@ import {
   Star,
   PanelLeftClose,
   PanelLeftOpen,
+  Shield,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuthActions } from "@/hooks/useAuthActions";
@@ -153,7 +154,14 @@ export default function DashboardLayout({
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const activeItem = [...navItems, ...secondaryNavItems].find(item => item.href === pathname);
+  const visibleNavItems = [...navItems];
+  if (user?.role === "admin") {
+    visibleNavItems.push({ name: "Admin Panel", href: "/dashboard/admin", icon: Shield });
+  }
+
+  const activeItem = [...visibleNavItems, ...secondaryNavItems].find(item => 
+    pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href))
+  );
 
   return (
     <ProtectedRoute>
@@ -191,9 +199,9 @@ export default function DashboardLayout({
             <div className="flex-1 min-h-0 space-y-4 overflow-y-auto sidebar-scrollbar py-1">
               <nav className="space-y-0.5">
                 <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Main Menu</p>
-                {navItems.map((item) => {
+                {visibleNavItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = pathname === item.href;
+                  const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
                   return (
                     <Link
                       key={item.name}
