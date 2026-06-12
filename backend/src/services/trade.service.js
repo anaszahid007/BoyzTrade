@@ -12,6 +12,7 @@ import WalletTransaction from '../models/walletTransaction.model.js';
 
 // Services
 import { getAssetPriceSymbol, getAssetPricesByIds } from './market.service.js';
+import { createNotification } from './notification.service.js';
 import { emitToUser } from '../socket.js';
 
 
@@ -208,6 +209,16 @@ export const sellAsset = async (userId, { symbol, quantity }) => {
     getPortfolio(userId).then(portfolioData => {
       emitToUser(userId, "portfolio-update", portfolioData.data);
     });
+
+    // Create notification
+    const pnlSign = realizedPnL >= 0 ? '+' : '';
+    createNotification({
+      userId,
+      title: 'Sell Order Executed',
+      message: `Sold ${quantity} ${asset.symbol} at $${currentPrice.toFixed(2)} (${pnlSign}$${realizedPnL.toFixed(2)} P&L)`,
+      type: 'TRADE',
+      meta: { symbol: asset.symbol, quantity, price: currentPrice, pnl: realizedPnL, tradeType: 'SELL', tradeId: trade._id },
+    }).catch(err => console.error('Failed to create notification:', err));
 
     return result;
   });

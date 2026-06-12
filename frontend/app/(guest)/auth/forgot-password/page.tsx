@@ -2,12 +2,14 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Mail, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import { authService } from "@/services/auth";
 import { Button } from "@/components/ui/Button";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,8 +21,12 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      await authService.forgotPassword(email);
-      setIsSent(true);
+      const token = await authService.forgotPassword(email);
+      if (token) {
+        router.push(`/auth/reset-password?token=${encodeURIComponent(token)}`);
+      } else {
+        setIsSent(true);
+      }
     } catch (err: any) {
       setError(err.message || "Failed to send reset email. Please check the address.");
     } finally {

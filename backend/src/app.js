@@ -12,6 +12,8 @@ import errorHandler from './middleware/error.middleware.js';
 import assetRoutes from './routes/asset.routes.js';
 import tradeRoutes from './routes/trade.routes.js';
 import authRoutes from './routes/auth.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
+import watchlistRoutes from './routes/watchlist.routes.js';
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.use(compression());
 app.use('/api/auth', authRoutes);
 app.use('/api/assets',assetRoutes);
 app.use('/api/trade', tradeRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/watchlist', watchlistRoutes);
 app.use('/health', (req, res) => res.status(200).json({ success: true, message: 'Service is running' }));
 app.use((req, res) => res.status(404).json({ success: false, message: 'Not Found' }));
 

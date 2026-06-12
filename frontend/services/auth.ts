@@ -64,4 +64,27 @@ export const authService = {
       data: { token, password },
     });
   },
+
+  async updateProfile(fullName: string): Promise<AuthUser> {
+    const response = await apiFetch<{ user: AuthUser }>("/api/auth/profile", {
+      method: "PATCH",
+      data: { fullName },
+    });
+    return response.data.user;
+  },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await apiFetch<void>("/api/auth/password", {
+      method: "PATCH",
+      data: { currentPassword, newPassword },
+    });
+  },
+
+  async updateSettings(settings: { notificationPreferences?: Record<string, boolean> }): Promise<AuthUser> {
+    const response = await apiFetch<{ user: AuthUser }>("/api/auth/settings", {
+      method: "PATCH",
+      data: settings,
+    });
+    return response.data.user;
+  },
 };

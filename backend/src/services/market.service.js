@@ -69,11 +69,17 @@ export const getAllMarketsAssets = async (page = 1, perPage = 50, { forceRefresh
  * @returns {Promise<Object>} - A promise resolving to the real-time price data for the specified asset
  */
 export const getAssetPriceSymbol = async (symbol) => {
+    const normalizedSymbol = symbol.toUpperCase();
+    const cacheKey = `asset:price:${normalizedSymbol}`;
+
+    // Check cache first
+    const cached = await getCachedValue(cacheKey);
+    if (cached) return cached;
+
+    const assetSymbol = await Asset.findOne({ symbol: normalizedSymbol });
+    if (!assetSymbol) throw new ApiError(404, 'Asset not found');
+
     try {
-
-        const assetSymbol = await Asset.findOne({ symbol: symbol.toUpperCase() });
-        if (!assetSymbol) throw new ApiError(404, 'Asset not found');
-
         const response = await axios.get(`${COINGECKO_API}/simple/price`, {
             params: {
                 ids: assetSymbol.assetId,
@@ -83,15 +89,31 @@ export const getAssetPriceSymbol = async (symbol) => {
             }
         });
 
-        return {
+        const result = {
             symbol: symbol,
             assetId: assetSymbol.assetId,
             current_price: response.data[assetSymbol.assetId]?.usd || 0,
             price_change_24h: response.data[assetSymbol.assetId]?.usd_24h_change || 0,
         };
 
+        if (result.current_price > 0) {
+            await setCachedValue(cacheKey, result, CACHE_TTL.MARKET_ASSETS);
+        }
+
+        return result;
+
     } catch (error) {
-        throw new ApiError(500, 'Failed to fetch asset price for the specified asset');
+        console.warn(`CoinGecko rate limit / error for ${normalizedSymbol}: ${error.message}. Falling back to DB price.`);
+
+        const fallback = {
+            symbol,
+            assetId: assetSymbol.assetId,
+            current_price: assetSymbol.currentPrice || 0,
+            price_change_24h: 0,
+        };
+
+        await setCachedValue(cacheKey, fallback, CACHE_TTL.MARKET_ASSETS);
+        return fallback;
     }
 };
 
@@ -102,6 +124,11 @@ export const getAssetPriceSymbol = async (symbol) => {
  * @returns {Promise<number>} - A promise resolving to the current price of the specified asset
 */
 export const getAssetPriceById = async (assetId) => {
+    const cacheKey = `asset:priceById:${assetId}`;
+
+    const cached = await getCachedValue(cacheKey);
+    if (cached) return cached;
+
     try {
         const response = await axios.get(`${COINGECKO_API}/simple/price`, {
             params: {
@@ -110,10 +137,23 @@ export const getAssetPriceById = async (assetId) => {
             }
         });
 
-        return response.data[assetId]?.usd;
+        const price = response.data[assetId]?.usd;
+        if (price > 0) {
+            await setCachedValue(cacheKey, price, CACHE_TTL.MARKET_ASSETS);
+        }
+
+        return price;
 
     } catch (error) {
-        throw new ApiError(500, 'Failed to fetch real-time price for the specified asset');
+        console.warn(`CoinGecko rate limit / error for assetId ${assetId}: ${error.message}. Returning 0.`);
+
+        const asset = await Asset.findOne({ assetId });
+        const fallbackPrice = asset?.currentPrice || 0;
+        if (fallbackPrice > 0) {
+            await setCachedValue(cacheKey, fallbackPrice, CACHE_TTL.MARKET_ASSETS);
+        }
+
+        return fallbackPrice;
     }
 };
 

@@ -152,12 +152,12 @@ export default function MarketPage() {
                           </div>
                         </td>
                         <td className="px-8 py-6 font-mono font-bold">
-                          ${asset.current_price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ${(asset.current_price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                         <td className="px-8 py-6">
-                          <span className={`flex items-center gap-1 text-sm font-bold ${asset.price_change_24h >= 0 ? 'text-success' : 'text-danger'}`}>
-                            {asset.price_change_24h >= 0 ? '+' : ''}
-                            {asset.price_change_24h.toFixed(2)}%
+                          <span className={`flex items-center gap-1 text-sm font-bold ${(asset.price_change_24h ?? 0) >= 0 ? 'text-success' : 'text-danger'}`}>
+                            {(asset.price_change_24h ?? 0) >= 0 ? '+' : ''}
+                            {Math.abs(asset.price_change_24h ?? 0).toFixed(2)}%
                           </span>
                         </td>
                         <td className="px-8 py-6 text-sm text-muted-foreground">

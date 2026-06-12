@@ -18,4 +18,22 @@ export const resetPasswordSchema = z.object({
   password: z.string().min(8)
 });
 
-export default { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema };
+export const updateProfileSchema = z.object({
+  fullName: z.string().min(2).max(100).optional(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8).max(128),
+});
+
+export const updateSettingsSchema = z.object({
+  notificationPreferences: z.object({
+    trade: z.boolean().optional(),
+    system: z.boolean().optional(),
+    alert: z.boolean().optional(),
+    market: z.boolean().optional(),
+  }).optional(),
+});
+
+export default { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema, changePasswordSchema, updateSettingsSchema };

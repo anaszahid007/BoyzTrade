@@ -10,7 +10,10 @@ import {
     registerSchema,
     loginSchema,
     forgotPasswordSchema,
-    resetPasswordSchema
+    resetPasswordSchema,
+    updateProfileSchema,
+    changePasswordSchema,
+    updateSettingsSchema
 } from '../validators/auth.validator.js';
 
 // Controllers
@@ -86,5 +89,26 @@ router.post('/reset-password', authLimiter, validate(resetPasswordSchema), contr
  * @access Private
  */
 router.get('/me', protect, controller.me);
+
+/**
+ * @route PATCH /api/auth/profile
+ * @desc Update user profile (fullName)
+ * @access Private
+ */
+router.patch('/profile', protect, validate(updateProfileSchema), controller.updateProfile);
+
+/**
+ * @route PATCH /api/auth/password
+ * @desc Change password while logged in
+ * @access Private
+ */
+router.patch('/password', protect, validate(changePasswordSchema), controller.changePassword);
+
+/**
+ * @route PATCH /api/auth/settings
+ * @desc Update user settings
+ * @access Private
+ */
+router.patch('/settings', protect, validate(updateSettingsSchema), controller.updateSettings);
 
 export default router;

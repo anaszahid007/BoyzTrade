@@ -408,4 +408,56 @@ export const me = asyncHandler(async (req, res) => {
   return ApiResponse.success(res, { user }, 'Current user');
 });
 
-export default { register, login, logout, refresh, verifyEmail, resendVerification, forgotPassword, resetPassword, me };
+/**
+ * @desc Update user profile (fullName)
+ * @route PATCH /api/auth/profile
+ * @access Private
+ */
+export const updateProfile = asyncHandler(async (req, res) => {
+  const { fullName } = req.body;
+  const update = {};
+  if (fullName) update.fullName = fullName;
+
+  const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select('-password -passwordHash');
+  if (!user) throw new ApiError(404, 'User not found');
+
+  return ApiResponse.success(res, { user }, 'Profile updated');
+});
+
+/**
+ * @desc Change password while logged in
+ * @route PATCH /api/auth/password
+ * @access Private
+ */
+export const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user._id).select('+password');
+  if (!user) throw new ApiError(404, 'User not found');
+
+  const isValid = await user.comparePassword(currentPassword);
+  if (!isValid) throw new ApiError(400, 'Current password is incorrect');
+
+  user.password = newPassword;
+  await user.save();
+
+  return ApiResponse.success(res, null, 'Password changed successfully');
+});
+
+/**
+ * @desc Update user settings (notification preferences, etc.)
+ * @route PATCH /api/auth/settings
+ * @access Private
+ */
+export const updateSettings = asyncHandler(async (req, res) => {
+  const { notificationPreferences } = req.body;
+  const update = {};
+  if (notificationPreferences) update.notificationPreferences = notificationPreferences;
+
+  const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select('-password -passwordHash');
+  if (!user) throw new ApiError(404, 'User not found');
+
+  return ApiResponse.success(res, { user }, 'Settings updated');
+});
+
+export default { register, login, logout, refresh, verifyEmail, resendVerification, forgotPassword, resetPassword, me, updateProfile, changePassword, updateSettings };
