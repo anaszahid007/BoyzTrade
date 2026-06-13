@@ -12,8 +12,8 @@ export const GuestFooter = () => {
           {/* Logo & Info */}
           <div className="md:col-span-1 space-y-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-success/10 rounded-xl border border-success/20">
-                <TrendingUp className="w-5 h-5 text-success" />
+              <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 border border-white/10">
+                <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
               </div>
               <span className="text-xl font-bold tracking-tight">Boyz<span className="text-success">Trade</span></span>
             </div>

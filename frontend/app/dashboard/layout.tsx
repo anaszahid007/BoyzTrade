@@ -184,8 +184,8 @@ export default function DashboardLayout({
             {/* Logo Section */}
             <div className="flex items-center mb-8">
               <Link href="/dashboard" className={`flex items-center group transition-all ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
-                <div className="p-1.5 bg-primary/10 rounded-lg neon-glow-blue border border-primary/20 group-hover:scale-105 transition-transform duration-300 shrink-0">
-                  <TrendingUp className="w-4 h-4 text-primary" />
+                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-white/10 group-hover:scale-105 transition-transform duration-300">
+                  <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
                 </div>
                 <div className={`flex flex-col overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
                   <span className="text-base font-bold tracking-tight leading-none whitespace-nowrap">Boyz<span className="text-primary">Trade</span></span>

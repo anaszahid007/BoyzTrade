@@ -14,7 +14,7 @@ export function useNotifications() {
   const fetchNotifications = useCallback(async () => {
     try {
       const result = await notificationService.list(1, 20);
-      setNotifications(result.data || []);
+      setNotifications(result || []);
     } catch {
       // silent
     } finally {

@@ -10,20 +10,9 @@ export interface NotificationItem {
   meta?: Record<string, any>;
 }
 
-export interface NotificationsResponse {
-  success: boolean;
-  data: NotificationItem[];
-  pagination: {
-    page: number;
-    perPage: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
 export const notificationService = {
-  async list(page = 1, perPage = 20): Promise<NotificationsResponse> {
-    const response = await apiFetch<NotificationsResponse>(
+  async list(page = 1, perPage = 20): Promise<NotificationItem[]> {
+    const response = await apiFetch<NotificationItem[]>(
       `/api/notifications?page=${page}&perPage=${perPage}`,
       { method: "GET" }
     );

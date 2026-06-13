@@ -75,21 +75,11 @@
   }
 
   .sidebar-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.18) transparent;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
   .sidebar-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
-  .sidebar-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .sidebar-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.16);
-    border-radius: 9999px;
-  }
-  .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.24);
+    display: none;
   }
 }
 

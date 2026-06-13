@@ -50,8 +50,8 @@ export const GuestNavbar = () => {
       `}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="p-2 bg-success/10 rounded-xl border border-success/20 group-hover:scale-110 transition-transform">
-              <TrendingUp className="w-6 h-6 text-success" />
+            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/10 group-hover:scale-110 transition-transform">
+              <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
             </div>
             <span className="text-2xl font-bold tracking-tight">Boyz<span className="text-success">Trade</span></span>
           </Link>

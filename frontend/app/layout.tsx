@@ -7,6 +7,7 @@ import { SocketProvider } from "@/contexts/SocketContext";
 export const metadata: Metadata = {
   title: "BoyzTrade",
   description: "Learn to trade crypto with $10,000 in virtual funds. Real market data, zero risk.",
+  icons: [{ rel: "icon", url: "/images/logo.jpeg" }],
 };
 
 export default function RootLayout({

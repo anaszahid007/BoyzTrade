@@ -6,10 +6,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   icon?: LucideIcon;
   iconPosition?: "left" | "right";
+  rightNode?: React.ReactNode;
 }
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, icon: Icon, iconPosition = "left", className = "", ...props }, ref) => {
+  ({ label, error, icon: Icon, iconPosition = "left", className = "", rightNode, ...props }, ref) => {
     const iconBaseClasses = "absolute top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground transition-colors";
     const iconLeftClasses = iconPosition === "left" ? "left-4" : "";
     const iconRightClasses = iconPosition === "right" ? "right-4" : "";
@@ -33,13 +34,18 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
               focus:outline-none focus:ring-2 focus:ring-success/50 focus:border-success
               transition-all duration-200
               ${Icon && iconPosition === "left" ? "pl-12" : ""}
-              ${Icon && iconPosition === "right" ? "pr-12" : ""}
+              ${Icon && iconPosition === "right" || rightNode ? "pr-12" : ""}
               ${error ? "border-danger focus:ring-danger/50" : ""}
               ${className}
             `}
             {...props}
           />
-          {Icon && iconPosition === "right" && (
+          {rightNode && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              {rightNode}
+            </div>
+          )}
+          {Icon && iconPosition === "right" && !rightNode && (
             <Icon className={`${iconBaseClasses} ${iconRightClasses} group-focus-within:text-success`} />
           )}
         </div>

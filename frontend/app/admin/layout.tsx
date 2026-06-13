@@ -92,8 +92,8 @@ export default function AdminLayout({
             {/* Logo Section */}
             <div className="flex items-center mb-8">
               <Link href="/admin" className={`flex items-center group transition-all ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
-                <div className="p-1.5 bg-success/10 rounded-lg neon-glow-green border border-success/20 group-hover:scale-105 transition-transform duration-300 shrink-0">
-                  <Shield className="w-4 h-4 text-success" />
+                <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-white/10 group-hover:scale-105 transition-transform duration-300">
+                  <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
                 </div>
                 <div className={`flex flex-col overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
                   <span className="text-base font-bold tracking-tight leading-none whitespace-nowrap">Boyz<span className="text-success">Admin</span></span>
@@ -103,7 +103,7 @@ export default function AdminLayout({
             </div>
 
             {/* Navigation Section */}
-            <div className="flex-1 min-h-0 space-y-4 overflow-y-auto py-1">
+            <div className="flex-1 min-h-0 space-y-4 overflow-y-auto sidebar-scrollbar py-1">
               <nav className="space-y-0.5">
                 <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Administration</p>
                 {navItems.map((item) => {
