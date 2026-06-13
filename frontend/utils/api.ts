@@ -5,7 +5,7 @@ export interface ApiResponse<T = any> {
   status?: number;
 }
 
-const API_URL = process.env.NEXT_BACKEND_API_URL || 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 function buildUrl(path: string) {
   if (path.startsWith('http')) {

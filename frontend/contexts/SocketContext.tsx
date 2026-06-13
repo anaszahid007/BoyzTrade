@@ -20,7 +20,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketInstance = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000", {
+    const socketInstance = io(process.env.NEXT_PUBLIC_API_URL, {
       withCredentials: true,
     });
 
