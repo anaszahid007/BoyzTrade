@@ -18,8 +18,13 @@ import adminRoutes from './routes/admin.routes.js';
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ 
+	origin: process.env.CLIENT_URL || 'https://boyz-trade.vercel.app',
+	credentials: true 
+}));
 app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

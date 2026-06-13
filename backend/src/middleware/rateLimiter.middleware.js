@@ -5,6 +5,7 @@ export const authLimiter = rateLimit({
     max: 100, // Limit each IP to 100 requests per windowMs
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    skip: (req, res) => false,
     message: {
         success: false,
         message: 'Too many requests, please try again after 15 minutes'
