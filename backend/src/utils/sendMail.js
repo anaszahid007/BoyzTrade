@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import envs from '../config/envs.js';
+import env from '../config/env.js';
 import ApiError from './ApiError.js';
 
 
@@ -13,7 +13,7 @@ import ApiError from './ApiError.js';
 export default async function ({ to, subject, text, html }) {
     if (!to || !subject) throw new ApiError(400, 'Missing required email fields: to and subject are required.');
 
-    const { host, port, user, pass } = envs.mail;
+    const { host, port, user, pass } = env.mail;
     if (!user || !pass) throw new ApiError(500, 'SMTP credentials are not configured.');
 
     try {

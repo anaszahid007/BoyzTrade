@@ -1,11 +1,11 @@
 import { Server } from "socket.io";
-import envs from "./config/envs.js";
+import env from "./config/env.js";
 
 let io;
 
 export const initSocket = (server) => {
   // Support comma-separated list of allowed origins e.g. "http://localhost:3000,https://xxx.ngrok-free.dev"
-  const allowedOrigins = envs.clientUrl
+  const allowedOrigins = env.clientUrl
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean);

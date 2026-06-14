@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 import { createServer } from 'http';
 import app from './src/app.js';
-import envs from './src/config/envs.js';
+import env from './src/config/env.js';
 import { initSocket } from './src/socket.js';
 import { startPriceBroadcast } from './src/services/broadcast.service.js';
 
-const PORT = envs.port;
-const MONGO_URI = envs.mongoUri;
+const PORT = env.port;
+const MONGO_URI = env.mongoUri;
 
 const httpServer = createServer(app);
 initSocket(httpServer);

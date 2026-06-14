@@ -7,7 +7,7 @@
 - `frontend/` — Next.js 16 application using React 19
 - `backend/` — Express API with MongoDB, Socket.IO, Redis, and JWT authentication
 - `docker-compose.yml` — Start frontend, backend, MongoDB, and Redis in one command
-- `backend/src/config/envs.js` — centralized configuration for MongoDB, Redis, JWT, cookies, mail, and URLs
+- `backend/src/config/env.js` — centralized configuration for MongoDB, Redis, JWT, cookies, mail, and URLs
 
 ## 🛠 Tech Stack
 
@@ -106,7 +106,7 @@ NEXT_PUBLIC_API_URL=http://localhost:4000
 
 ## 📌 Notes
 
-- The backend now uses MongoDB and Redis; Firebase is not part of this repository.
+- The backend now uses MongoDB and Redis.
 - Docker Compose includes Redis and MongoDB for local development.
 - Keep secret env values out of source control.
 

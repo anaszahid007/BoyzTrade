@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
-import envs from '../config/envs.js';
+import env from '../config/env.js';
 
-const JWT_ACCESS_SECRET = envs.jwt.access.secret || 'change-me-access';
-const JWT_REFRESH_SECRET = envs.jwt.refresh.secret || 'change-me-refresh';
-const JWT_ACCESS_EXPIRES = envs.jwt.access.expiresIn || '7d';
-const JWT_REFRESH_EXPIRES = envs.jwt.refresh.expiresIn || '30d';
+const JWT_ACCESS_SECRET = env.jwt.access.secret || 'change-me-access';
+const JWT_REFRESH_SECRET = env.jwt.refresh.secret || 'change-me-refresh';
+const JWT_ACCESS_EXPIRES = env.jwt.access.expiresIn || '7d';
+const JWT_REFRESH_EXPIRES = env.jwt.refresh.expiresIn || '30d';
 
 /**
  * Sign an access token

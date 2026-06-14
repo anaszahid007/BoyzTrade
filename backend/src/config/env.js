@@ -3,13 +3,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const {
+    NODE_ENV,
     PORT,
     MONGO_URI,
     JWT_ACCESS_SECRET,
     JWT_REFRESH_SECRET,
     JWT_ACCESS_EXPIRES,
     JWT_REFRESH_EXPIRES,
-    NODE_ENV,
     COOKIE_SECURE,
     COOKIE_DOMAIN,
     EMAIL_HOST,

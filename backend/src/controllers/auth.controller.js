@@ -4,7 +4,7 @@ import RefreshToken from '../models/refreshToken.model.js';
 import VerificationToken from '../models/verificationToken.model.js';
 
 // Config
-import envs from '../config/envs.js';
+import env from '../config/env.js';
 
 // Utils
 import jwtUtils from '../utils/jwt.js';
@@ -17,9 +17,9 @@ import { generateRandomToken, hashToken } from '../utils/crypto.js';
 
 const cookieOptions = {
   httpOnly: true,
-  secure: envs.cookie.secure,
-  sameSite: envs.cookie.sameSite,
-  domain: envs.cookie.domain,
+  secure: env.cookie.secure,
+  sameSite: env.cookie.sameSite,
+  domain: env.cookie.domain,
   maxAge: 30 * 24 * 60 * 60 * 1000
 };
 
@@ -32,7 +32,7 @@ const createTokens = async (userId) => {
   const tokenHash = hashToken(rawRefresh);
 
   // Parse refresh expiry - default 30 days
-  const exp = envs.jwt.refresh.expiresIn || '30d';
+  const exp = env.jwt.refresh.expiresIn || '30d';
   let expiresAt;
 
   if (exp.endsWith('d')) {
@@ -75,8 +75,8 @@ export const register = asyncHandler(async (req, res) => {
     expiresAt: verificationExpires
   });
 
-  const verificationUrl = `${envs.backendUrl}/api/auth/verify-email?token=${verificationTokenRaw}&next=${encodeURIComponent(
-    `${envs.clientUrl}/auth/verified`
+  const verificationUrl = `${env.backendUrl}/api/auth/verify-email?token=${verificationTokenRaw}&next=${encodeURIComponent(
+    `${env.clientUrl}/auth/verified`
   )}`;
 
   await sendMail({
@@ -130,8 +130,8 @@ export const login = asyncHandler(async (req, res) => {
       expiresAt: verificationExpires
     });
 
-    const verificationUrl = `${envs.backendUrl}/api/auth/verify-email?token=${verificationTokenRaw}&next=${encodeURIComponent(
-      `${envs.clientUrl}/auth/verified`
+    const verificationUrl = `${env.backendUrl}/api/auth/verify-email?token=${verificationTokenRaw}&next=${encodeURIComponent(
+      `${env.clientUrl}/auth/verified`
     )}`;
 
     await sendMail({
@@ -312,8 +312,8 @@ export const resendVerification = asyncHandler(async (req, res) => {
     expiresAt: verificationExpires
   });
 
-  const verificationUrl = `${envs.backendUrl}/api/auth/verify-email?token=${verificationTokenRaw}&next=${encodeURIComponent(
-    `${envs.clientUrl}/auth/verified`
+  const verificationUrl = `${env.backendUrl}/api/auth/verify-email?token=${verificationTokenRaw}&next=${encodeURIComponent(
+    `${env.clientUrl}/auth/verified`
   )}`;
 
   await sendMail({

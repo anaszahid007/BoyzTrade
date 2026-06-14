@@ -3,6 +3,7 @@ import "./globals.css";
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SocketProvider } from "@/contexts/SocketContext";
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: "BoyzTrade",
@@ -23,6 +24,7 @@ export default function RootLayout({
             {children}
           </SocketProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

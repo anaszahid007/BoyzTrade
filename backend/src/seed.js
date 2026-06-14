@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import envs from './config/envs.js';
+import env from './config/env.js';
 import User from './models/user.model.js';
 
 const ADMIN_EMAIL = 'admin@boyztrade.com';
@@ -8,7 +8,7 @@ const ADMIN_NAME = 'Admin';
 
 const seed = async () => {
   try {
-    await mongoose.connect(envs.mongoUri, { autoIndex: true });
+    await mongoose.connect(env.mongoUri, { autoIndex: true });
     console.log('MongoDB connected');
 
     const existing = await User.findOne({ email: ADMIN_EMAIL });
