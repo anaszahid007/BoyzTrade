@@ -27,6 +27,7 @@ export interface AssetSummary {
   current_price: number;
   logo?: string;
   market_cap: number;
+  total_volume?: number;
   price_change_24h: number;
   last_updated: string;
 }

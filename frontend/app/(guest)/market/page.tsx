@@ -3,9 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { 
-  TrendingUp, 
+  TrendingUp,
   Search, 
-  ArrowRight, 
   RefreshCw,
   BarChart2,
   Activity,
@@ -16,14 +15,47 @@ import { usePrices } from "@/hooks/usePrices";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
-const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 }
-};
+function formatCompact(value: number): string {
+  if (value >= 1_000_000_000_000) return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
+  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+  return `$${value.toLocaleString()}`;
+}
 
 export default function MarketPage() {
-  const { prices, loading, refresh } = usePrices();
+  const { prices, loading, refresh } = usePrices({ perPage: 50 });
+
+  const totalMarketCap = prices.reduce((sum, a) => sum + (a.market_cap || 0), 0);
+  const totalVolume = prices.reduce((sum, a) => sum + (a.total_volume || 0), 0);
+  const btc = prices.find((a) => a.symbol === "BTC");
+  const btcDominance = btc?.market_cap && totalMarketCap > 0
+    ? (btc.market_cap / totalMarketCap) * 100
+    : null;
+
+  const marketStats = [
+    {
+      label: "Global Market Cap",
+      value: totalMarketCap > 0 ? formatCompact(totalMarketCap) : "—",
+      change: btc?.price_change_24h != null
+        ? `${btc.price_change_24h >= 0 ? "+" : ""}${btc.price_change_24h.toFixed(1)}%`
+        : null,
+      icon: Globe,
+    },
+    {
+      label: "24h Trading Volume",
+      value: totalVolume > 0 ? formatCompact(totalVolume) : "—",
+      change: null,
+      icon: BarChart2,
+    },
+    {
+      label: "BTC Dominance",
+      value: btcDominance != null ? `${btcDominance.toFixed(1)}%` : "—",
+      change: btc?.price_change_24h != null
+        ? `${btc.price_change_24h >= 0 ? "+" : ""}${btc.price_change_24h.toFixed(1)}%`
+        : null,
+      icon: TrendingUp,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-bg-dark text-foreground">
@@ -65,11 +97,7 @@ export default function MarketPage() {
       {/* Market Stats Grid */}
       <section className="py-12 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { label: "Global Market Cap", value: "$1.34T", change: "+2.4%", icon: Globe },
-            { label: "24h Trading Volume", value: "$84.2B", change: "-5.1%", icon: BarChart2 },
-            { label: "BTC Dominance", value: "52.4%", change: "+0.8%", icon: TrendingUp },
-          ].map((stat, i) => (
+          {marketStats.map((stat, i) => (
             <motion.div 
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}
@@ -81,12 +109,20 @@ export default function MarketPage() {
                 <div className="p-2 bg-white/5 rounded-xl group-hover:bg-success/10 transition-colors">
                   <stat.icon className="w-5 h-5 text-muted-foreground group-hover:text-success transition-colors" />
                 </div>
-                <span className={`text-xs font-bold ${stat.change.startsWith('+') ? 'text-success' : 'text-danger'}`}>
-                  {stat.change}
-                </span>
+                {stat.change != null && (
+                  <span className={`text-xs font-bold ${stat.change.startsWith('+') ? 'text-success' : 'text-danger'}`}>
+                    {stat.change}
+                  </span>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-              <p className="text-2xl font-bold">{stat.value}</p>
+              <p className="text-2xl font-bold">
+                {loading && stat.value === "—" ? (
+                  <span className="inline-block w-24 h-7 rounded-md bg-white/5 animate-pulse" />
+                ) : (
+                  stat.value
+                )}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -115,9 +151,9 @@ export default function MarketPage() {
                     <th className="px-8 py-5">Asset</th>
                     <th className="px-8 py-5">Price</th>
                     <th className="px-8 py-5">24h Change</th>
-                    <th className="px-8 py-5">24h Volume</th>
+                    {/* <th className="px-8 py-5">24h Volume</th> */}
                     <th className="px-8 py-5">Market Cap</th>
-                    <th className="px-8 py-5"></th>
+                    <th className="px-8 py-5">—</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -160,9 +196,9 @@ export default function MarketPage() {
                             {Math.abs(asset.price_change_24h ?? 0).toFixed(2)}%
                           </span>
                         </td>
-                        <td className="px-8 py-6 text-sm text-muted-foreground">
+                        {/* <td className="px-8 py-6 text-sm text-muted-foreground">
                           —
-                        </td>
+                        </td> */}
                         <td className="px-8 py-6 text-sm text-muted-foreground">
                           ${(asset.market_cap / 1000000000).toFixed(2)}B
                         </td>
@@ -193,7 +229,7 @@ export default function MarketPage() {
       {/* Market Education CTA */}
       <section className="pb-32 px-6">
         <div className="max-w-4xl mx-auto glass p-16 rounded-[4rem] border border-success/10 bg-gradient-to-br from-success/5 to-transparent text-center space-y-8">
-           <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Don't just watch. <span className="text-success">Practice.</span></h2>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Don&apos;t just watch. <span className="text-success">Practice.</span></h2>
            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
              Watching prices is the first step. Executing trades is where the real learning happens. Get $10,000 in virtual funds now.
            </p>
