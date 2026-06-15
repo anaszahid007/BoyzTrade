@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 const TradingViewChart = dynamic(
-  () => import("@/components/trading/TradingViewChart"),
+  () => import("@/components/dashboard/trading/TradingViewChart"),
   { ssr: false }
 );
 
@@ -248,7 +248,7 @@ export default function AssetTradeDetailPage() {
                 </div>
                 <div className="bg-white/5 rounded-lg p-2.5 border border-white/10">
                   <p className="text-[8px] text-muted-foreground uppercase tracking-widest mb-1 font-bold">Your Holdings</p>
-                  <p className="text-sm font-bold">{assetHolding?.quantity.toFixed(4) || "0"} {asset.symbol}</p>
+                  <p className="text-sm font-bold">{typeof assetHolding?.quantity === 'number' ? assetHolding.quantity.toFixed(4) : "0"} {asset.symbol}</p>
                 </div>
               </div>
             </div>
@@ -322,7 +322,7 @@ export default function AssetTradeDetailPage() {
                   <span className="text-[9px] text-primary font-medium">
                     {tradeType === "BUY"
                       ? `Available: $${availableBalance.toLocaleString()}`
-                      : `Holding: ${assetHolding?.quantity.toFixed(4) || "0"} ${symbol}`}
+                      : `Holding: ${typeof assetHolding?.quantity === 'number' ? assetHolding.quantity.toFixed(4) : "0"} ${symbol}`}
                   </span>
                 </div>
                 <div className="relative">

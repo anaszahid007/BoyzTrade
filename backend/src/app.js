@@ -16,13 +16,17 @@ import notificationRoutes from './routes/notification.routes.js';
 import watchlistRoutes from './routes/watchlist.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 
+// Config
+import env from './config/env.js';
+
+
 const app = express();
 
 app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(cors({ 
-	origin: process.env.CLIENT_URL || 'https://boyz-trade.vercel.app',
+	origin: env.clientUrl,
 	credentials: true 
 }));
 app.use(morgan('combined'));

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 // Utils
-import ApiError from '../utils/ApiError.js';
+import ErrorResponse from '../utils/ErrorResponse.js';
 
 // Models
 import Trade from '../models/trade.model.js';
@@ -64,16 +64,16 @@ const runInTransaction = async (work) => {
  * @param {String} userId - ID of the user making the trade
  * @param {Object} { symbol, quantity } - Trade details including symbol and quantity
  * @returns {Object} - Details of the executed trade
- * @throws {ApiError} - Throws error if asset not found, insufficient balance, or any other issue during transaction
+ * @throws {ErrorResponse} - Throws error if asset not found, insufficient balance, or any other issue during transaction
 */
 export const buyAsset = async (userId, { symbol, quantity }) => {
   return await runInTransaction(async (session) => {
     const asset = await Asset.findOne({ symbol: symbol.toUpperCase() }).session(session);
-    if (!asset) throw new ApiError(404, 'Asset not found');
+    if (!asset) throw new ErrorResponse(404, 'Asset not found');
 
     const priceData = await getAssetPriceSymbol(symbol);
     const currentPrice = priceData.current_price;
-    if (currentPrice === 0) throw new ApiError(404, 'Price unavailable for this asset');
+    if (currentPrice === 0) throw new ErrorResponse(404, 'Price unavailable for this asset');
     
     const totalCost = currentPrice * quantity;
 
@@ -83,7 +83,7 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
       await portfolio.save({ session });
     }
 
-    if (portfolio.totalBalance < totalCost) throw new ApiError(400, 'Insufficient balance');
+    if (portfolio.totalBalance < totalCost) throw new ErrorResponse(400, 'Insufficient balance');
 
     let holding = await PortfolioHolding.findOne({ portfolioId: portfolio._id, assetId: asset._id }).session(session);
     if (holding) {
@@ -147,22 +147,22 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
  * @param {String} userId - ID of the user making the trade
  * @param {Object} { symbol, quantity } - Trade details including symbol and quantity
  * @returns {Object} - Details of the executed trade
- * @throws {ApiError} - Throws error if asset not found, insufficient holdings, or any other issue during transaction
+ * @throws {ErrorResponse} - Throws error if asset not found, insufficient holdings, or any other issue during transaction
 */
 export const sellAsset = async (userId, { symbol, quantity }) => {
   return await runInTransaction(async (session) => {
     const asset = await Asset.findOne({ symbol: symbol.toUpperCase() }).session(session);
-    if (!asset) throw new ApiError(404, 'Asset not found');
+    if (!asset) throw new ErrorResponse(404, 'Asset not found');
 
     const priceData = await getAssetPriceSymbol(symbol);
     const currentPrice = priceData.current_price;
-    if (currentPrice === 0) throw new ApiError(404, 'Price unavailable for this asset');
+    if (currentPrice === 0) throw new ErrorResponse(404, 'Price unavailable for this asset');
 
     const portfolio = await Portfolio.findOne({ userId }).session(session);
-    if (!portfolio) throw new ApiError(404, 'Portfolio not found');
+    if (!portfolio) throw new ErrorResponse(404, 'Portfolio not found');
 
     const holding = await PortfolioHolding.findOne({ portfolioId: portfolio._id, assetId: asset._id }).session(session);
-    if (!holding || holding.quantity < quantity) throw new ApiError(400, 'Insufficient holdings to sell');
+    if (!holding || holding.quantity < quantity) throw new ErrorResponse(400, 'Insufficient holdings to sell');
 
     const totalSellValue = currentPrice * quantity;
     const balanceBefore = portfolio.totalBalance;
@@ -228,7 +228,7 @@ export const sellAsset = async (userId, { symbol, quantity }) => {
  * @desc Retrieve the user's portfolio details including cash balance, invested value, current portfolio value, profit/loss, and holdings
  * @param {String} userId - ID of the user whose portfolio is being retrieved
  * @returns {Object} - Portfolio details including cash balance, invested value, current portfolio value, profit/loss, and holdings
- * @throws {ApiError} - Throws error if any issue occurs while retrieving portfolio details
+ * @throws {ErrorResponse} - Throws error if any issue occurs while retrieving portfolio details
 */
 export const getPortfolio = async (userId) => {
   const portfolio = await Portfolio.findOne({ userId });

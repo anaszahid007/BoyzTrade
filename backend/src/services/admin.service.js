@@ -7,7 +7,7 @@ import WalletTransaction from '../models/walletTransaction.model.js';
 import Watchlist from '../models/watchlist.model.js';
 import Notification from '../models/notification.model.js';
 import Asset from '../models/asset.model.js';
-import ApiError from '../utils/ApiError.js';
+import ErrorResponse from '../utils/ErrorResponse.js';
 import { broadcast, emitToUser } from '../socket.js';
 import { getPortfolio } from './trade.service.js';
 
@@ -120,7 +120,7 @@ export const getUsersList = async ({ page = 1, limit = 20, search = '', role = '
  */
 export const getUserDetails = async (userId) => {
   const user = await User.findById(userId).select('-password').lean();
-  if (!user) throw new ApiError(404, 'User not found');
+  if (!user) throw new ErrorResponse(404, 'User not found');
 
   const portfolioResult = await getPortfolio(userId);
   const trades = await Trade.find({ userId }).sort({ createdAt: -1 }).limit(10).populate('assetId').lean();
@@ -139,11 +139,11 @@ export const getUserDetails = async (userId) => {
  */
 export const updateUserRole = async (userId, role) => {
   if (!['user', 'admin'].includes(role)) {
-    throw new ApiError(400, 'Invalid role');
+    throw new ErrorResponse(400, 'Invalid role');
   }
 
   const user = await User.findByIdAndUpdate(userId, { role }, { new: true }).select('-password');
-  if (!user) throw new ApiError(404, 'User not found');
+  if (!user) throw new ErrorResponse(404, 'User not found');
   
   return user;
 };
@@ -153,7 +153,7 @@ export const updateUserRole = async (userId, role) => {
  */
 export const toggleUserVerification = async (userId) => {
   const user = await User.findById(userId);
-  if (!user) throw new ApiError(404, 'User not found');
+  if (!user) throw new ErrorResponse(404, 'User not found');
 
   user.isVerified = !user.isVerified;
   await user.save();
@@ -170,7 +170,7 @@ export const adjustUserBalance = async (userId, { amount, description = 'Admin A
 
   try {
     const user = await User.findById(userId).session(session);
-    if (!user) throw new ApiError(404, 'User not found');
+    if (!user) throw new ErrorResponse(404, 'User not found');
 
     let portfolio = await Portfolio.findOne({ userId }).session(session);
     if (!portfolio) {
@@ -181,7 +181,7 @@ export const adjustUserBalance = async (userId, { amount, description = 'Admin A
     portfolio.totalBalance += amount;
     
     if (portfolio.totalBalance < 0) {
-      throw new ApiError(400, 'Transaction would result in a negative balance');
+      throw new ErrorResponse(400, 'Transaction would result in a negative balance');
     }
 
     await portfolio.save({ session });
@@ -225,7 +225,7 @@ export const deleteUserCascade = async (userId) => {
 
   try {
     const user = await User.findById(userId).session(session);
-    if (!user) throw new ApiError(404, 'User not found');
+    if (!user) throw new ErrorResponse(404, 'User not found');
 
     const portfolio = await Portfolio.findOne({ userId }).session(session);
     const portfolioId = portfolio?._id;
@@ -342,12 +342,12 @@ export const createAsset = async (assetData) => {
   const { symbol, name, marketType = 'crypto', currentPrice = 0, logo } = assetData;
 
   if (!symbol || !name) {
-    throw new ApiError(400, 'Symbol and Name are required');
+    throw new ErrorResponse(400, 'Symbol and Name are required');
   }
 
   const existing = await Asset.findOne({ symbol: symbol.toUpperCase() });
   if (existing) {
-    throw new ApiError(400, `Asset with symbol ${symbol} already exists`);
+    throw new ErrorResponse(400, `Asset with symbol ${symbol} already exists`);
   }
 
   const newAsset = await Asset.create({
@@ -367,7 +367,7 @@ export const createAsset = async (assetData) => {
  */
 export const updateAsset = async (assetId, updateData) => {
   const asset = await Asset.findByIdAndUpdate(assetId, updateData, { new: true });
-  if (!asset) throw new ApiError(404, 'Asset not found');
+  if (!asset) throw new ErrorResponse(404, 'Asset not found');
   return asset;
 };
 
@@ -376,7 +376,7 @@ export const updateAsset = async (assetId, updateData) => {
  */
 export const deleteAsset = async (assetId) => {
   const asset = await Asset.findByIdAndDelete(assetId);
-  if (!asset) throw new ApiError(404, 'Asset not found');
+  if (!asset) throw new ErrorResponse(404, 'Asset not found');
   return { success: true, message: 'Asset deleted successfully' };
 };
 
@@ -385,7 +385,7 @@ export const deleteAsset = async (assetId) => {
  */
 export const broadcastNotification = async ({ title, message, type = 'SYSTEM' }) => {
   if (!title || !message) {
-    throw new ApiError(400, 'Title and Message are required for broadcast');
+    throw new ErrorResponse(400, 'Title and Message are required for broadcast');
   }
 
   const users = await User.find({}, '_id');

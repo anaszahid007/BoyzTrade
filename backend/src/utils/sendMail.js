@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 import env from '../config/env.js';
-import ApiError from './ApiError.js';
+import ErrorResponse from './ErrorResponse.js';
 
 
 /**
@@ -11,10 +11,10 @@ import ApiError from './ApiError.js';
  * @param {string} html - Email HTML content.
  */
 export default async function ({ to, subject, text, html }) {
-    if (!to || !subject) throw new ApiError(400, 'Missing required email fields: to and subject are required.');
+    if (!to || !subject) throw new ErrorResponse(400, 'Missing required email fields: to and subject are required.');
 
     const { host, port, user, pass } = env.mail;
-    if (!user || !pass) throw new ApiError(500, 'SMTP credentials are not configured.');
+    if (!user || !pass) throw new ErrorResponse(500, 'SMTP credentials are not configured.');
 
     try {
         const transporter = nodemailer.createTransport({
@@ -37,6 +37,6 @@ export default async function ({ to, subject, text, html }) {
         return info;
     } catch (error) {
         console.error('Error sending email:', error.message);
-        throw new ApiError(500, 'Failed to send email: ' + error.message);
+        throw new ErrorResponse(500, 'Failed to send email: ' + error.message);
     }
 }

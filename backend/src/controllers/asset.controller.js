@@ -1,5 +1,8 @@
 import Asset from '../models/asset.model.js';
-import { getAllMarketsAssets, getOrCreateAssetBySymbol } from '../services/market.service.js';
+import {
+    getAllMarketsAssets,
+    getOrCreateAssetBySymbol
+} from '../services/market.service.js';
 
 
 /**

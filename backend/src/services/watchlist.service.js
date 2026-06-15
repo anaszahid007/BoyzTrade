@@ -1,7 +1,7 @@
 import Watchlist from '../models/watchlist.model.js';
 import Asset from '../models/asset.model.js';
 import { getAssetPricesByIds, getOrCreateAssetBySymbol } from './market.service.js';
-import ApiError from '../utils/ApiError.js';
+import ErrorResponse from '../utils/ErrorResponse.js';
 
 export const getWatchlist = async (userId) => {
   const entries = await Watchlist.find({ userId })
@@ -44,14 +44,14 @@ export const addToWatchlist = async (userId, symbol) => {
   try {
     await getOrCreateAssetBySymbol(normalizedSymbol);
   } catch {
-    throw new ApiError(404, `Asset ${symbol} not found`);
+    throw new ErrorResponse(404, `Asset ${symbol} not found`);
   }
 
   const asset = await Asset.findOne({ symbol: normalizedSymbol });
-  if (!asset) throw new ApiError(404, `Asset ${symbol} not found`);
+  if (!asset) throw new ErrorResponse(404, `Asset ${symbol} not found`);
 
   const existing = await Watchlist.findOne({ userId, assetId: asset._id });
-  if (existing) throw new ApiError(400, `${symbol} is already in your watchlist`);
+  if (existing) throw new ErrorResponse(400, `${symbol} is already in your watchlist`);
 
   const entry = await Watchlist.create({ userId, assetId: asset._id });
   return { _id: entry._id, symbol: asset.symbol };
@@ -59,8 +59,8 @@ export const addToWatchlist = async (userId, symbol) => {
 
 export const removeFromWatchlist = async (userId, symbol) => {
   const asset = await Asset.findOne({ symbol: symbol.toUpperCase() });
-  if (!asset) throw new ApiError(404, `Asset ${symbol} not found`);
+  if (!asset) throw new ErrorResponse(404, `Asset ${symbol} not found`);
 
   const result = await Watchlist.deleteOne({ userId, assetId: asset._id });
-  if (result.deletedCount === 0) throw new ApiError(404, `${symbol} not in your watchlist`);
+  if (result.deletedCount === 0) throw new ErrorResponse(404, `${symbol} not in your watchlist`);
 };

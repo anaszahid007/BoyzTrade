@@ -1,5 +1,6 @@
 import Notification from '../models/notification.model.js';
 import { emitToUser } from '../socket.js';
+import ErrorResponse from '../utils/ErrorResponse.js';
 
 export const createNotification = async ({ userId, title, message, type = 'SYSTEM', meta }) => {
   const notification = await Notification.create({ userId, title, message, type, meta });
@@ -46,7 +47,7 @@ export const markAsRead = async (userId, notificationId) => {
     { isRead: true },
     { new: true }
   );
-  if (!notification) throw new Error('Notification not found');
+  if (!notification) throw new ErrorResponse(404, 'Notification not found');
   return notification;
 };
 
@@ -56,5 +57,18 @@ export const markAllAsRead = async (userId) => {
 };
 
 export const getUnreadCount = async (userId) => {
-  return Notification.countDocuments({ userId, isRead: false });
+  const count = await Notification.countDocuments({ userId, isRead: false });
+  if (!count) throw new ErrorResponse(404, 'Unread count not found');
+  return count;
 };
+
+
+export const getUserUnreadNotifications = async (userId) => {
+  try {
+    const unreadNotifications = await Notification.find({ userId, isRead: false });
+    if (!unreadNotifications) throw new ErrorResponse(404, 'Unread notifications not found');
+    return unreadNotifications;
+  } catch (error) {
+    throw new ErrorResponse(500, 'Failed to fetch unread notifications');
+  }
+} 

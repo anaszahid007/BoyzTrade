@@ -10,25 +10,23 @@ import {
   Settings,
   LogOut,
   TrendingUp,
-  Bell,
   Search,
   User as UserIcon,
   ChevronRight,
   TrendingDown,
   ArrowUpRight,
-  CheckCheck,
-  X,
   Star,
   PanelLeftClose,
   PanelLeftOpen,
   Shield,
+  Bell,
 } from "lucide-react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuthActions } from "@/hooks/useAuthActions";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePortfolio } from "@/hooks/usePortfolio";
-import { useNotifications } from "@/hooks/useNotifications";
 import { tradeService, AssetSummary } from "@/services/trade";
+import { NotificationBell } from "@/components/dashboard/NotificationBell";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -36,6 +34,7 @@ const navItems = [
   { name: "Trade", href: "/dashboard/trade", icon: ArrowLeftRight },
   { name: "Watchlist", href: "/dashboard/watchlist", icon: Star },
   { name: "History", href: "/dashboard/transactions", icon: TrendingUp },
+  { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
 ];
 
 const secondaryNavItems = [
@@ -115,19 +114,11 @@ export default function DashboardLayout({
     router.push(`/dashboard/trade/${symbol}`);
   };
 
-  // Notification state
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
-  const [showNotifications, setShowNotifications] = useState(false);
-  const notifRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdowns on outside click
+  // Close search dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setShowNotifications(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -396,92 +387,14 @@ export default function DashboardLayout({
                       </div>
                     ) : searchQuery.trim() ? (
                       <div className="px-3 py-2 text-[11px] text-muted-foreground">
-                        No assets found for "{searchQuery}"
+                        No assets found for &ldquo;{searchQuery}&rdquo;
                       </div>
                     ) : null}
                   </div>
                 )}
               </div>
 
-              <div className="relative" ref={notifRef}>
-                <button
-                  onClick={() => setShowNotifications((prev) => !prev)}
-                  className="relative p-2 bg-white/5 rounded-lg hover:bg-white/10 transition-all group"
-                >
-                  <Bell className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 bg-danger text-white text-[8px] font-bold rounded-full border border-bg-dark">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {showNotifications && (
-                  <div className="absolute top-full right-0 mt-1 w-80 bg-[#0b0c10] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50">
-                    <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
-                      <span className="text-xs font-bold text-foreground">Notifications</span>
-                      {unreadCount > 0 && (
-                        <button
-                          onClick={markAllAsRead}
-                          className="flex items-center gap-1 text-[9px] text-primary hover:text-primary/80 transition-colors"
-                        >
-                          <CheckCheck className="w-3 h-3" />
-                          Mark all read
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="max-h-80 overflow-y-auto">
-                      {notifications.length === 0 ? (
-                        <div className="px-3 py-6 text-center text-[10px] text-muted-foreground">
-                          No notifications yet
-                        </div>
-                      ) : (
-                        notifications.slice(0, 10).map((n) => (
-                          <button
-                            key={n._id}
-                            onClick={() => { if (!n.isRead) markAsRead(n._id); }}
-                            className={`w-full text-left px-3 py-2.5 hover:bg-white/5 transition-colors border-b border-white/5 last:border-b-0 ${!n.isRead ? "bg-primary/5" : ""
-                              }`}
-                          >
-                            <div className="flex items-start gap-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[10px] font-bold text-foreground leading-none">{n.title}</span>
-                                  {!n.isRead && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                                  )}
-                                </div>
-                                <p className="text-[9px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{n.message}</p>
-                                <p className="text-[8px] text-muted-foreground/50 mt-0.5">
-                                  {new Date(n.createdAt).toLocaleString("en-US", {
-                                    month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-                                  })}
-                                </p>
-                              </div>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setShowNotifications(false); }}
-                                className="shrink-0 p-0.5 text-muted-foreground hover:text-foreground transition-colors"
-                              >
-                                <X className="w-2.5 h-2.5" />
-                              </button>
-                            </div>
-                          </button>
-                        ))
-                      )}
-                    </div>
-
-                    {notifications.length > 10 && (
-                      <button
-                        onClick={() => setShowNotifications(false)}
-                        className="w-full px-3 py-2 text-[10px] text-primary font-bold border-t border-white/5 hover:bg-white/5 transition-colors text-center"
-                      >
-                        View all notifications
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+              <NotificationBell />
 
               <div className="h-6 w-[1px] bg-white/5 mx-0.5 hidden sm:block" />
 

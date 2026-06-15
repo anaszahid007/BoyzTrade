@@ -10,9 +10,14 @@ export interface NotificationItem {
   meta?: Record<string, any>;
 }
 
+interface NotifListResponse {
+  data: NotificationItem[];
+  pagination: { page: number; perPage: number; total: number; totalPages: number };
+}
+
 export const notificationService = {
-  async list(page = 1, perPage = 20): Promise<NotificationItem[]> {
-    const response = await apiFetch<NotificationItem[]>(
+  async list(page = 1, perPage = 20): Promise<NotifListResponse> {
+    const response = await apiFetch<NotifListResponse>(
       `/api/notifications?page=${page}&perPage=${perPage}`,
       { method: "GET" }
     );
@@ -25,6 +30,14 @@ export const notificationService = {
       { method: "GET" }
     );
     return response.data.count;
+  },
+
+  async getUnreadList(): Promise<NotificationItem[]> {
+    const response = await apiFetch<NotificationItem[]>(
+      `/api/notifications/unread-list`,
+      { method: "GET" }
+    );
+    return response.data;
   },
 
   async markRead(id: string): Promise<void> {

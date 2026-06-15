@@ -1,4 +1,4 @@
-import ApiError from '../utils/ApiError.js';
+import ErrorResponse from '../utils/ErrorResponse.js';
 import env from '../config/env.js';
 
 export default (err, req, res, next) => {

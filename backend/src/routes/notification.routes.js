@@ -5,6 +5,7 @@ import {
   markRead,
   markAllRead,
   unreadCount,
+  unreadList
 } from '../controllers/notification.controller.js';
 
 const router = express.Router();
@@ -13,6 +14,7 @@ router.use(protect);
 
 router.get('/', listNotifications);
 router.get('/unread-count', unreadCount);
+router.get('/unread-list', unreadList);
 router.patch('/:id/read', markRead);
 router.patch('/read-all', markAllRead);
 

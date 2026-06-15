@@ -1,5 +1,5 @@
 import * as adminService from '../services/admin.service.js';
-import ApiError from '../utils/ApiError.js';
+import ErrorResponse from '../utils/ErrorResponse.js';
 
 /**
  * GET /api/admin/stats
@@ -66,7 +66,7 @@ export async function updateUserRole(req, res, next) {
     const { role } = req.body;
 
     if (!role) {
-      throw new ApiError(400, 'Role is required');
+      throw new ErrorResponse(400, 'Role is required');
     }
 
     const updatedUser = await adminService.updateUserRole(userId, role);
@@ -106,7 +106,7 @@ export async function adjustUserBalance(req, res, next) {
     const { amount, description } = req.body;
 
     if (amount === undefined || typeof amount !== 'number') {
-      throw new ApiError(400, 'Adjustment amount must be a number');
+      throw new ErrorResponse(400, 'Adjustment amount must be a number');
     }
 
     const result = await adminService.adjustUserBalance(userId, { amount, description });
@@ -129,7 +129,7 @@ export async function deleteUser(req, res, next) {
     
     // Prevent self-deletion
     if (req.user._id.toString() === userId) {
-      throw new ApiError(400, 'You cannot delete your own admin account');
+      throw new ErrorResponse(400, 'You cannot delete your own admin account');
     }
 
     const result = await adminService.deleteUserCascade(userId);

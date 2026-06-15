@@ -1,36 +1,12 @@
 import axios from "axios";
-import ApiError from "../utils/ApiError.js";
+import ErrorResponse from "../utils/ErrorResponse.js";
 import Asset from "../models/asset.model.js";
 import { getCachedValue, setCachedValue, CACHE_TTL } from "../utils/redisCache.js";
 
 // CoinGecko API base URL
 const COINGECKO_API = 'https://api.coingecko.com/api/v3';
 
-const formatMarketAssets = (coins) =>
-    coins.map((coin) => ({
-        symbol: coin.symbol.toUpperCase(),
-        name: coin.name,
-        market_type: 'crypto',
-        current_price: coin.current_price,
-        logo: coin.image,
-        market_cap: coin.market_cap,
-        price_change_24h: coin.price_change_percentage_24h,
-        last_updated: coin.last_updated,
-    }));
 
-const fetchMarketAssetsFromApi = async (page, perPage) => {
-    const coinsList = await axios.get(`${COINGECKO_API}/coins/markets`, {
-        params: {
-            vs_currency: 'usd',
-            order: 'market_cap_desc',
-            sparkline: false,
-            page,
-            per_page: perPage,
-        },
-    });
-
-    return formatMarketAssets(coinsList.data);
-};
 
 /**
  * @desc Get the list of All Markets Assets
@@ -49,16 +25,41 @@ export const getAllMarketsAssets = async (page = 1, perPage = 50, { forceRefresh
     }
 
     try {
-        const assets = await fetchMarketAssetsFromApi(page, perPage);
+        
+        // Fetch market assets from the CoinGecko API
+        const coinsList = await axios.get(`${COINGECKO_API}/coins/markets`, {
+            params: {
+                vs_currency: 'usd',
+                order: 'market_cap_desc',
+                sparkline: false,
+                page,
+                per_page: perPage,
+            },
+        });
+        
+        // Directly map the API response to the desired format without an extra formatting function
+        const assets = coinsList.data.map((coin) => ({
+            symbol: coin.symbol.toUpperCase(),
+            name: coin.name,
+            market_type: 'crypto',
+            current_price: coin.current_price,
+            logo: coin.image,
+            market_cap: coin.market_cap,
+            total_volume: coin.total_volume,
+            price_change_24h: coin.price_change_percentage_24h,
+            last_updated: coin.last_updated,
+        }));
+
         await setCachedValue(cacheKey, assets, CACHE_TTL.MARKET_ASSETS);
         return assets;
+
     } catch (error) {
         const stale = await getCachedValue(cacheKey);
         if (stale) {
             console.warn(`CoinGecko fetch failed, serving stale cache for ${cacheKey}:`, error.message);
             return stale;
         }
-        throw new ApiError(500, 'Failed to fetch assets with real-time price');
+        throw new ErrorResponse(500, 'Failed to fetch assets with real-time price');
     }
 }
 
@@ -77,7 +78,7 @@ export const getAssetPriceSymbol = async (symbol) => {
     if (cached) return cached;
 
     const assetSymbol = await Asset.findOne({ symbol: normalizedSymbol });
-    if (!assetSymbol) throw new ApiError(404, 'Asset not found');
+    if (!assetSymbol) throw new ErrorResponse(404, 'Asset not found');
 
     try {
         const response = await axios.get(`${COINGECKO_API}/simple/price`, {
@@ -226,7 +227,7 @@ export const getAllCoins = async (page = 1, perPage = 50) => {
         });
         return response.data;
     } catch (error) {
-        throw new ApiError(500, 'Failed to fetch supported coins');
+        throw new ErrorResponse(500, 'Failed to fetch supported coins');
     }
 };
 
@@ -311,7 +312,7 @@ export const getOrCreateAssetBySymbol = async (symbol) => {
 
             coin = searchResponse.data.coins.find((c) => c.symbol.toUpperCase() === normalizedSymbol) || searchResponse.data.coins[0];
             if (!coin) {
-                throw new ApiError(404, `Asset with symbol ${symbol} not found in CoinGecko`);
+                throw new ErrorResponse(404, `Asset with symbol ${symbol} not found in CoinGecko`);
             }
 
             await setCachedValue(searchCacheKey, coin, CACHE_TTL.ASSET_SEARCH);
@@ -354,8 +355,8 @@ export const getOrCreateAssetBySymbol = async (symbol) => {
         return assetResponse;
 
     } catch (error) {
-        if (error instanceof ApiError) throw error;
-        throw new ApiError(500, `Failed to get or create asset: ${error.message}`);
+        if (error instanceof ErrorResponse) throw error;
+        throw new ErrorResponse(500, `Failed to get or create asset: ${error.message}`);
     }
 };
 
