@@ -1,4 +1,4 @@
-import asyncHandler from '../middleware/asyncHandler.js';
+import asyncHandler from '../utils/asyncHandler.js';
 import * as notificationService from '../services/notification.service.js';
 import Response from '../utils/Response.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
