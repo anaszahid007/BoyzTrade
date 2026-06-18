@@ -15,7 +15,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronRight,
-  User as UserIcon
+  User as UserIcon,
+  Award,
+  Zap,
 } from "lucide-react";
 import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
 import { useAuthActions } from "@/hooks/useAuthActions";
@@ -26,6 +28,8 @@ const navItems = [
   { name: "Users Directory", href: "/admin/users", icon: Users },
   { name: "Asset Catalog", href: "/admin/assets", icon: Database },
   { name: "Global Trade Log", href: "/admin/trades", icon: History },
+  { name: "Badge Manager", href: "/admin/badges", icon: Award },
+  { name: "Quest Manager", href: "/admin/quests", icon: Zap },
   { name: "Broadcast Center", href: "/admin/broadcast", icon: Megaphone },
 ];
 
@@ -118,14 +122,14 @@ export default function AdminLayout({
                       className={`
                         group relative flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
                         ${isActive
-                            ? "bg-success/15 text-success shadow-[0_0_20px_rgba(239,68,68,0.1)] border border-success/20"
+                            ? "bg-success/15 text-success border border-success/20"
                             : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
                       `}
                     >
                       <div className={`flex items-center ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
                         <div className={`
                           p-1 rounded-lg transition-all duration-300
-                          ${isActive ? "bg-success text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
+                          ${isActive ? "bg-success text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
                         `}>
                           <Icon className="w-3.5 h-3.5" />
                         </div>

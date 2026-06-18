@@ -36,6 +36,22 @@ router.patch('/assets/:assetId', controller.updateAsset);
 router.delete('/assets/:assetId', controller.deleteAsset);
 
 /**
+ * Badge management
+ */
+router.get('/badges', controller.getBadges);
+router.post('/badges', controller.createBadge);
+router.patch('/badges/:badgeId', controller.updateBadge);
+router.delete('/badges/:badgeId', controller.deleteBadge);
+
+/**
+ * Quest management
+ */
+router.get('/quests', controller.getQuests);
+router.post('/quests', controller.createQuest);
+router.patch('/quests/:questId', controller.updateQuest);
+router.delete('/quests/:questId', controller.deleteQuest);
+
+/**
  * Global communications
  */
 router.post('/broadcast', controller.broadcastAlert);

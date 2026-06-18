@@ -13,6 +13,7 @@ import Response from '../utils/Response.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { generateRandomToken, hashToken } from '../utils/crypto.js';
+import { updateStreak, awardXP } from '../services/gamification.service.js';
 
 
 const cookieOptions = {
@@ -165,6 +166,10 @@ export const login = asyncHandler(async (req, res) => {
   const userObj = user.toObject();
   delete userObj.password;
   delete userObj.passwordHash;
+
+  // Gamification: daily login streak + XP
+  updateStreak(user._id).catch(() => {});
+  awardXP(user._id, 5, 'daily_login').catch(() => {});
 
   // For mobile clients return refresh token in response
   if (req.headers['x-client-type'] === 'mobile') {
@@ -460,4 +465,25 @@ export const updateSettings = asyncHandler(async (req, res) => {
   return Response.success(res, { user }, 'Settings updated');
 });
 
-export default { register, login, logout, refresh, verifyEmail, resendVerification, forgotPassword, resetPassword, me, updateProfile, changePassword, updateSettings };
+/**
+ * @desc Submit onboarding survey
+ * @route PATCH /api/auth/survey
+ * @access Private
+ */
+export const submitSurvey = asyncHandler(async (req, res) => {
+  const { experienceLevel, referralSource, tradingGoals } = req.body;
+
+  const update = {
+    surveyCompleted: true,
+    'onboardingSurvey.experienceLevel': experienceLevel || null,
+    'onboardingSurvey.referralSource': referralSource || null,
+    'onboardingSurvey.tradingGoals': tradingGoals || null,
+  };
+
+  const user = await User.findByIdAndUpdate(req.user._id, update, { new: true }).select('-password -passwordHash');
+  if (!user) throw new ErrorResponse(404, 'User not found');
+
+  return Response.success(res, { user }, 'Survey submitted');
+});
+
+export default { register, login, logout, refresh, verifyEmail, resendVerification, forgotPassword, resetPassword, me, updateProfile, changePassword, updateSettings, submitSurvey };

@@ -13,6 +13,8 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
       router.push("/auth/login");
     } else if (!loading && user && !user.isVerified) {
       router.push("/auth/verification-sent");
+    } else if (!loading && user && user.isVerified && !user.surveyCompleted) {
+      router.push("/auth/survey");
     }
   }, [user, loading, router]);
 
@@ -24,7 +26,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     );
   }
 
-  if (!user || !user.isVerified) {
+  if (!user || !user.isVerified || !user.surveyCompleted) {
     return null;
   }
 

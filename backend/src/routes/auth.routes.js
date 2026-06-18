@@ -111,4 +111,11 @@ router.patch('/password', protect, validate(changePasswordSchema), controller.ch
  */
 router.patch('/settings', protect, validate(updateSettingsSchema), controller.updateSettings);
 
+/**
+ * @route PATCH /api/auth/survey
+ * @desc Submit onboarding survey
+ * @access Private
+ */
+router.patch('/survey', protect, controller.submitSurvey);
+
 export default router;

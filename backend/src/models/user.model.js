@@ -19,6 +19,12 @@ const UserSchema = new Schema(
       system: { type: Boolean, default: true },
       alert: { type: Boolean, default: true },
       market: { type: Boolean, default: false }
+    },
+    surveyCompleted: { type: Boolean, default: false },
+    onboardingSurvey: {
+      experienceLevel: { type: String, enum: ['beginner', 'intermediate', 'advanced', 'professional'], default: null },
+      referralSource: { type: String, default: null },
+      tradingGoals: { type: String, default: null }
     }
   },
   { timestamps: true }

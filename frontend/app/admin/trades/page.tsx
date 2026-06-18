@@ -8,8 +8,6 @@ import {
   Search,
   Filter,
   ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
   RefreshCcw,
   ArrowUpRight,
   ArrowDownRight,
@@ -271,26 +269,26 @@ export default function GlobalTradeLog() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="bg-white/2 border-t border-white/5 px-4 py-3 flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground">
-              Page <span className="text-foreground font-bold">{page}</span> of <span className="text-foreground font-bold">{totalPages}</span>
-            </span>
-            <div className="inline-flex items-center gap-1.5">
-              <Button
-                disabled={page <= 1}
+        {trades.length > 0 && (
+          <div className="flex items-center justify-between px-5 py-3 border-t border-white/5 bg-white/[0.01]">
+            <p className="text-[9px] text-muted-foreground/40">
+              Page {page} of {totalPages}
+            </p>
+            <div className="flex items-center gap-1.5">
+              <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
-                className="p-1 h-7 w-7 rounded-md border border-white/5 flex items-center justify-center disabled:opacity-40"
+                disabled={page <= 1}
+                className="px-2.5 py-1 rounded-md text-[10px] font-bold text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button
-                disabled={page >= totalPages}
+                Previous
+              </button>
+              <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                className="p-1 h-7 w-7 rounded-md border border-white/5 flex items-center justify-center disabled:opacity-40"
+                disabled={page >= totalPages}
+                className="px-2.5 py-1 rounded-md text-[10px] font-bold text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
+                Next
+              </button>
             </div>
           </div>
         )}

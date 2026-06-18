@@ -91,14 +91,14 @@ export default function DashboardSidebar({ isCollapsed, isSidebarOpen, onClose }
                     className={`
                       group relative flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
                       ${isActive
-                          ? "bg-primary/15 text-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)] border border-primary/20"
+                          ? "bg-success/15 text-success border border-success/20"
                           : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
                     `}
                   >
                     <div className={`flex items-center ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
                       <div className={`
                         p-1 rounded-lg transition-all duration-300
-                        ${isActive ? "bg-primary text-white shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
+                        ${isActive ? "bg-success text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
                       `}>
                         <Icon className="w-3.5 h-3.5" />
                       </div>

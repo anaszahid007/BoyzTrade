@@ -11,6 +11,15 @@ export interface AdminStats {
   };
   totalAssets: number;
   totalTransactions: number;
+  gamification: {
+    totalXp: number;
+    averageLevel: number;
+    surveyCompleted: number;
+    totalBadges: number;
+    totalQuests: number;
+    earnedBadgesCount: number;
+    questCompletions: number;
+  };
 }
 
 export interface AdminUser {
@@ -19,11 +28,18 @@ export interface AdminUser {
   fullName: string;
   role: string;
   isVerified: boolean;
+  surveyCompleted?: boolean;
   createdAt: string;
   portfolio: {
     totalBalance: number;
     totalProfitLoss: number;
     totalAssets: number;
+  };
+  gamification: {
+    xp: number;
+    level: number;
+    levelTitle: string;
+    currentStreak: number;
   };
 }
 

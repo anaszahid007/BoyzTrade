@@ -29,7 +29,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user && user.isVerified) {
-      router.push("/dashboard");
+      router.push(user.surveyCompleted ? "/dashboard" : "/auth/survey");
     }
   }, [user, loading, router]);
 

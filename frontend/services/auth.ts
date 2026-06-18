@@ -4,6 +4,7 @@ export interface AuthUser {
   _id: string;
   email: string;
   fullName?: string;
+  surveyCompleted?: boolean;
   [key: string]: any;
 }
 
@@ -84,6 +85,14 @@ export const authService = {
     const response = await apiFetch<{ user: AuthUser }>("/api/auth/settings", {
       method: "PATCH",
       data: settings,
+    });
+    return response.data.user;
+  },
+
+  async submitSurvey(data: { experienceLevel: string; referralSource: string; tradingGoals: string }): Promise<AuthUser> {
+    const response = await apiFetch<{ user: AuthUser }>("/api/auth/survey", {
+      method: "PATCH",
+      data,
     });
     return response.data.user;
   },

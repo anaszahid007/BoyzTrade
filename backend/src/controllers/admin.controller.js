@@ -1,4 +1,5 @@
 import * as adminService from '../services/admin.service.js';
+import * as gamificationService from '../services/gamification.service.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
 
 /**
@@ -249,6 +250,102 @@ export async function broadcastAlert(req, res, next) {
       message: `System notification broadcasted to ${result.count} users successfully`,
       data: result
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/admin/badges
+ */
+export async function getBadges(req, res, next) {
+  try {
+    const data = await gamificationService.listBadges();
+    return res.status(200).json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/admin/badges
+ */
+export async function createBadge(req, res, next) {
+  try {
+    const data = await gamificationService.createBadge(req.body);
+    return res.status(201).json({ success: true, data, message: 'Badge created' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * PATCH /api/admin/badges/:badgeId
+ */
+export async function updateBadge(req, res, next) {
+  try {
+    const data = await gamificationService.updateBadge(req.params.badgeId, req.body);
+    return res.status(200).json({ success: true, data, message: 'Badge updated' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * DELETE /api/admin/badges/:badgeId
+ */
+export async function deleteBadge(req, res, next) {
+  try {
+    await gamificationService.deleteBadge(req.params.badgeId);
+    return res.status(200).json({ success: true, message: 'Badge deleted' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * GET /api/admin/quests
+ */
+export async function getQuests(req, res, next) {
+  try {
+    const data = await gamificationService.listQuests();
+    return res.status(200).json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * POST /api/admin/quests
+ */
+export async function createQuest(req, res, next) {
+  try {
+    const data = await gamificationService.createQuest(req.body);
+    return res.status(201).json({ success: true, data, message: 'Quest created' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * PATCH /api/admin/quests/:questId
+ */
+export async function updateQuest(req, res, next) {
+  try {
+    const data = await gamificationService.updateQuest(req.params.questId, req.body);
+    return res.status(200).json({ success: true, data, message: 'Quest updated' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * DELETE /api/admin/quests/:questId
+ */
+export async function deleteQuest(req, res, next) {
+  try {
+    await gamificationService.deleteQuest(req.params.questId);
+    return res.status(200).json({ success: true, message: 'Quest deleted' });
   } catch (err) {
     next(err);
   }

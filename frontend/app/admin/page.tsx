@@ -16,7 +16,11 @@ import {
   AlertCircle,
   Database,
   Terminal,
-  Activity
+  Activity,
+  Zap,
+  BarChart3,
+  ClipboardCheck,
+  Award,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -120,10 +124,6 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold tracking-tight">Admin <span className="text-success">Terminal</span></h1>
           <p className="text-[11px] text-muted-foreground">Manage platform parameters, users, assets, and broadcast alerts.</p>
         </div>
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-success/10 rounded-full border border-success/20 text-success text-[9px] font-bold">
-          <Terminal className="w-3 h-3" />
-          <span>CONSOLE ACTIVE</span>
-        </div>
       </motion.div>
 
       {/* Stats Grid */}
@@ -181,6 +181,82 @@ export default function AdminDashboard() {
           </div>
         </div>
       </motion.div>
+
+      {/* Gamification Stats Row */}
+      {stats?.gamification && (
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Zap className="w-16 h-16 text-warning" />
+            </div>
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Total XP Earned</p>
+            <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats.gamification.totalXp.toLocaleString()}</h2>
+            <div className="flex items-center gap-1 mt-3 text-[9px] text-warning font-bold">
+              <Zap className="w-3 h-3" />
+              <span>Across All Users</span>
+            </div>
+          </div>
+
+          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <BarChart3 className="w-16 h-16 text-primary" />
+            </div>
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Average Level</p>
+            <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats.gamification.averageLevel}</h2>
+            <div className="flex items-center gap-1 mt-3 text-[9px] text-primary font-bold">
+              <BarChart3 className="w-3 h-3" />
+              <span>User Progression</span>
+            </div>
+          </div>
+
+          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <ClipboardCheck className="w-16 h-16 text-success" />
+            </div>
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Surveys Completed</p>
+            <h2 className="text-2xl font-bold mt-1 tracking-tight">
+              {stats.gamification.surveyCompleted}
+              <span className="text-sm text-muted-foreground font-normal ml-1">
+                / {stats.totalUsers}
+              </span>
+            </h2>
+            <div className="flex items-center gap-1 mt-3 text-[9px] text-success font-bold">
+              <ClipboardCheck className="w-3 h-3" />
+              <span>
+                {stats.totalUsers > 0
+                  ? Math.round((stats.gamification.surveyCompleted / stats.totalUsers) * 100)
+                  : 0}% Onboarded
+              </span>
+            </div>
+          </div>
+
+          {/* Total Badges */}
+          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Award className="w-16 h-16 text-warning" />
+            </div>
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Active Badges</p>
+            <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats.gamification.totalBadges}</h2>
+            <div className="flex items-center gap-1 mt-3 text-[9px] text-warning font-bold">
+              <Award className="w-3 h-3" />
+              <span>{stats.gamification.earnedBadgesCount} Earned Total</span>
+            </div>
+          </div>
+
+          {/* Total Quests */}
+          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Zap className="w-16 h-16 text-primary" />
+            </div>
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Active Quests</p>
+            <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats.gamification.totalQuests}</h2>
+            <div className="flex items-center gap-1 mt-3 text-[9px] text-primary font-bold">
+              <Zap className="w-3 h-3" />
+              <span>{stats.gamification.questCompletions} Completions</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Control Panels Grid */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -252,33 +328,41 @@ export default function AdminDashboard() {
               </div>
               <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-success transition-colors" />
             </Link>
+
+            <Link 
+              href="/admin/badges" 
+              className="flex items-center justify-between p-3.5 rounded-lg bg-white/2 hover:bg-white/5 border border-white/5 hover:border-success/20 transition-all group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
+                  <Award className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold">Badge Manager</h4>
+                  <p className="text-[9px] text-muted-foreground">Create and edit achievement badges</p>
+                </div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-success transition-colors" />
+            </Link>
+
+            <Link 
+              href="/admin/quests" 
+              className="flex items-center justify-between p-3.5 rounded-lg bg-white/2 hover:bg-white/5 border border-white/5 hover:border-success/20 transition-all group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold">Quest Manager</h4>
+                  <p className="text-[9px] text-muted-foreground">Manage daily, weekly & milestone quests</p>
+                </div>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-success transition-colors" />
+            </Link>
           </div>
         </div>
 
-        {/* System Operations Logs Summary */}
-        <div className="glass p-6 rounded-xl border border-white/5 flex flex-col justify-between">
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold tracking-tight border-b border-white/5 pb-2">Console Operations</h3>
-            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-              This terminal provides direct administrative access to the platform databases. Exercise caution when altering user cash reserves or deleting account registries, as cascade actions permanently clear balances and transactional ledger logs.
-            </p>
-          </div>
-          
-          <div className="p-3 bg-white/2 rounded-lg border border-white/5 mt-4 space-y-1.5">
-            <div className="flex items-center justify-between text-[9px] font-mono">
-              <span className="text-muted-foreground">DB Server Connection:</span>
-              <span className="text-success font-bold">CONNECTED (HEALTHY)</span>
-            </div>
-            <div className="flex items-center justify-between text-[9px] font-mono">
-              <span className="text-muted-foreground">Socket.IO Broadcast Service:</span>
-              <span className="text-success font-bold">BROADCASTER READY</span>
-            </div>
-            <div className="flex items-center justify-between text-[9px] font-mono">
-              <span className="text-muted-foreground">Redis Cache Memory:</span>
-              <span className="text-success font-bold">CACHING ENABLED</span>
-            </div>
-          </div>
-        </div>
       </motion.div>
     </motion.div>
   );

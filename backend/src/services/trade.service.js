@@ -14,6 +14,7 @@ import WalletTransaction from '../models/walletTransaction.model.js';
 import { getAssetPriceSymbol, getAssetPricesByIds } from './market.service.js';
 import { createNotification } from './notification.service.js';
 import { emitToUser } from '../socket.js';
+import { awardXP, addTradeStats } from './gamification.service.js';
 
 
 const INITIAL_BALANCE = 10000;
@@ -137,6 +138,10 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
       emitToUser(userId, "portfolio-update", portfolioData.data);
     });
 
+    // Gamification
+    awardXP(userId, 5, 'trade_placed').catch(() => {});
+    addTradeStats(userId, 0).catch(() => {});
+
     return result;
   });
 };
@@ -219,6 +224,11 @@ export const sellAsset = async (userId, { symbol, quantity }) => {
       type: 'TRADE',
       meta: { symbol: asset.symbol, quantity, price: currentPrice, pnl: realizedPnL, tradeType: 'SELL', tradeId: trade._id },
     }).catch(err => console.error('Failed to create notification:', err));
+
+    // Gamification
+    const tradeXP = realizedPnL > 0 ? 10 : 2;
+    awardXP(userId, tradeXP, 'trade_completed').catch(() => {});
+    addTradeStats(userId, realizedPnL).catch(() => {});
 
     return result;
   });

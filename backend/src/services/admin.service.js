@@ -7,6 +7,12 @@ import WalletTransaction from '../models/walletTransaction.model.js';
 import Watchlist from '../models/watchlist.model.js';
 import Notification from '../models/notification.model.js';
 import Asset from '../models/asset.model.js';
+import UserGamification from '../models/userGamification.model.js';
+import LevelConfig from '../models/levelConfig.model.js';
+import Badge from '../models/badge.model.js';
+import Quest from '../models/quest.model.js';
+import UserBadge from '../models/userBadge.model.js';
+import UserQuest from '../models/userQuest.model.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
 import { broadcast, emitToUser } from '../socket.js';
 import { getPortfolio } from './trade.service.js';
@@ -46,12 +52,33 @@ export const getGlobalStats = async () => {
     if (item._id === 'FAILED') tradesByStatus.failed = item.count;
   });
 
+  // Gamification aggregates
+  const [xpAgg, surveyCount, totalBadges, totalQuests, earnedBadgesCount, questCompletions] = await Promise.all([
+    UserGamification.aggregate([
+      { $group: { _id: null, totalXp: { $sum: '$xp' }, avgLevel: { $avg: '$level' } } }
+    ]),
+    User.countDocuments({ surveyCompleted: true }),
+    Badge.countDocuments({ isActive: true }),
+    Quest.countDocuments({ isActive: true }),
+    UserBadge.countDocuments(),
+    UserQuest.countDocuments({ completed: true }),
+  ]);
+
   return {
     totalUsers,
     totalPortfolioValue: totalCashBalance,
     totalTrades: tradesByStatus,
     totalAssets,
-    totalTransactions
+    totalTransactions,
+    gamification: {
+      totalXp: xpAgg[0]?.totalXp || 0,
+      averageLevel: xpAgg[0] ? Math.round(xpAgg[0].avgLevel * 10) / 10 : 0,
+      surveyCompleted: surveyCount,
+      totalBadges,
+      totalQuests,
+      earnedBadgesCount,
+      questCompletions,
+    }
   };
 };
 
@@ -88,8 +115,13 @@ export const getUsersList = async ({ page = 1, limit = 20, search = '', role = '
   const portfolios = await Portfolio.find({ userId: { $in: userIds } }).lean();
   const portfolioMap = new Map(portfolios.map(p => [p.userId.toString(), p]));
 
+  // Fetch gamification profiles
+  const gamificationProfiles = await UserGamification.find({ userId: { $in: userIds } }).lean();
+  const gamificationMap = new Map(gamificationProfiles.map(g => [g.userId.toString(), g]));
+
   const usersWithDetails = users.map(user => {
     const portfolio = portfolioMap.get(user._id.toString());
+    const gamification = gamificationMap.get(user._id.toString());
     return {
       ...user,
       portfolio: portfolio ? {
@@ -100,6 +132,17 @@ export const getUsersList = async ({ page = 1, limit = 20, search = '', role = '
         totalBalance: 10000, // Default initial balance if not created yet
         totalProfitLoss: 0,
         totalAssets: 0
+      },
+      gamification: gamification ? {
+        xp: gamification.xp,
+        level: gamification.level,
+        levelTitle: gamification.levelTitle,
+        currentStreak: gamification.currentStreak,
+      } : {
+        xp: 0,
+        level: 1,
+        levelTitle: 'Beginner',
+        currentStreak: 0,
       }
     };
   });
@@ -126,11 +169,34 @@ export const getUserDetails = async (userId) => {
   const trades = await Trade.find({ userId }).sort({ createdAt: -1 }).limit(10).populate('assetId').lean();
   const transactions = await WalletTransaction.find({ userId }).sort({ createdAt: -1 }).limit(10).lean();
 
+  const gamification = await UserGamification.findOne({ userId }).lean();
+
+  let gamificationData = null;
+  if (gamification) {
+    const nextLevel = await LevelConfig.findOne({ level: gamification.level + 1 }).lean();
+    const currentLevel = await LevelConfig.findOne({ level: gamification.level }).lean();
+
+    gamificationData = {
+      xp: gamification.xp,
+      level: gamification.level,
+      levelTitle: gamification.levelTitle,
+      xpForNext: nextLevel ? nextLevel.xpRequired : gamification.xp,
+      xpForCurrent: currentLevel ? currentLevel.xpRequired : 0,
+      currentStreak: gamification.currentStreak,
+      longestStreak: gamification.longestStreak,
+      totalTrades: gamification.totalTrades,
+      profitableTrades: gamification.profitableTrades,
+      challengesCompleted: gamification.challengesCompleted,
+      lessonsCompleted: gamification.lessonsCompleted,
+    };
+  }
+
   return {
     user,
     portfolio: portfolioResult.data,
     recentTrades: trades,
-    recentTransactions: transactions
+    recentTransactions: transactions,
+    gamification: gamificationData,
   };
 };
 
