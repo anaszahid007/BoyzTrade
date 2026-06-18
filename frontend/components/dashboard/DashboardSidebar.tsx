@@ -12,17 +12,25 @@ import {
   Star,
   Shield,
   Bell,
+  Trophy,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthActions } from "@/hooks/useAuthActions";
 
-const navItems = [
+const tradingNavItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Portfolio", href: "/dashboard/portfolio", icon: Wallet },
   { name: "Trade", href: "/dashboard/trade", icon: ArrowLeftRight },
+  { name: "Portfolio", href: "/dashboard/portfolio", icon: Wallet },
   { name: "Watchlist", href: "/dashboard/watchlist", icon: Star },
+];
+
+const activityNavItems = [
   { name: "History", href: "/dashboard/transactions", icon: TrendingUp },
   { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+];
+
+const communityNavItems = [
+  { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy },
 ];
 
 const secondaryNavItems = [
@@ -40,10 +48,76 @@ export default function DashboardSidebar({ isCollapsed, isSidebarOpen, onClose }
   const { user } = useAuth();
   const { logout } = useAuthActions();
 
-  const visibleNavItems = [...navItems];
+  const visibleSecondary = [...secondaryNavItems];
   if (user?.role === "admin") {
-    visibleNavItems.push({ name: "Admin Panel", href: "/admin", icon: Shield });
+    visibleSecondary.push({ name: "Admin Panel", href: "/admin", icon: Shield });
   }
+
+  const renderGroup = (items: typeof tradingNavItems) =>
+    items.map((item) => {
+      const Icon = item.icon;
+      const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+      return (
+        <Link
+          key={item.name}
+          href={item.href}
+          title={isCollapsed ? item.name : undefined}
+          onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+          className={`
+            group relative flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
+            ${isActive
+                ? "bg-success/15 text-success border border-success/20"
+                : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
+          `}
+        >
+          <div className={`flex items-center ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
+            <div className={`
+              p-1 rounded-lg transition-all duration-300
+              ${isActive ? "bg-success text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
+            `}>
+              <Icon className="w-3.5 h-3.5" />
+            </div>
+            <span className={`font-bold text-xs overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'} ${isActive ? "translate-x-0.5" : ""}`}>{item.name}</span>
+          </div>
+          {isActive && !isCollapsed && (
+            <div className="w-1 h-2.5 rounded-full bg-success shadow-[0_0_10px_#3b82f6]" />
+          )}
+          {isActive && isCollapsed && (
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-success shadow-[0_0_10px_#3b82f6]" />
+          )}
+        </Link>
+      );
+    });
+
+  const renderSecondaryGroup = (items: typeof visibleSecondary) =>
+    items.map((item) => {
+      const Icon = item.icon;
+      const isActive = pathname === item.href;
+      return (
+        <Link
+          key={item.name}
+          href={item.href}
+          title={isCollapsed ? item.name : undefined}
+          onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+          className={`
+            group flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
+            ${isActive
+                ? "bg-primary/15 text-primary border border-primary/20"
+                : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
+          `}
+        >
+          <div className={`flex items-center ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
+            <div className={`
+              p-1 rounded-lg transition-all duration-300
+              ${isActive ? "bg-primary text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
+            `}>
+              <Icon className="w-3.5 h-3.5" />
+            </div>
+            <span className={`font-bold text-xs overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>{item.name}</span>
+          </div>
+        </Link>
+      );
+    });
 
   return (
     <>
@@ -77,74 +151,28 @@ export default function DashboardSidebar({ isCollapsed, isSidebarOpen, onClose }
 
           {/* Navigation Section */}
           <div className="flex-1 min-h-0 space-y-4 overflow-y-auto sidebar-scrollbar py-1">
+            {/* Trading Section */}
             <nav className="space-y-0.5">
-              <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Main Menu</p>
-              {visibleNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    title={isCollapsed ? item.name : undefined}
-                    onClick={() => { if (window.innerWidth < 1024) onClose(); }}
-                    className={`
-                      group relative flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
-                      ${isActive
-                          ? "bg-success/15 text-success border border-success/20"
-                          : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
-                    `}
-                  >
-                    <div className={`flex items-center ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
-                      <div className={`
-                        p-1 rounded-lg transition-all duration-300
-                        ${isActive ? "bg-success text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
-                      `}>
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <span className={`font-bold text-xs overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'} ${isActive ? "translate-x-0.5" : ""}`}>{item.name}</span>
-                    </div>
-                    {isActive && !isCollapsed && (
-                      <div className="w-1 h-2.5 rounded-full bg-success shadow-[0_0_10px_#3b82f6]" />
-                    )}
-                    {isActive && isCollapsed && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-success shadow-[0_0_10px_#3b82f6]" />
-                    )}
-                  </Link>
-                );
-              })}
+              <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Trading</p>
+              {renderGroup(tradingNavItems)}
             </nav>
 
+            {/* Activity Section */}
+            <nav className="space-y-0.5">
+              <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Activity</p>
+              {renderGroup(activityNavItems)}
+            </nav>
+
+            {/* Community Section */}
+            <nav className="space-y-0.5">
+              <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Community</p>
+              {renderGroup(communityNavItems)}
+            </nav>
+
+            {/* Configuration */}
             <nav className="space-y-0.5">
               <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Configuration</p>
-              {secondaryNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    title={isCollapsed ? item.name : undefined}
-                    onClick={() => { if (window.innerWidth < 1024) onClose(); }}
-                    className={`
-                      group flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
-                      ${isActive
-                          ? "bg-primary/15 text-primary border border-primary/20"
-                          : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
-                    `}
-                  >
-                    <div className={`flex items-center ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
-                      <div className={`
-                        p-1 rounded-lg transition-all duration-300
-                        ${isActive ? "bg-primary text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
-                      `}>
-                        <Icon className="w-3.5 h-3.5" />
-                      </div>
-                      <span className={`font-bold text-xs overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>{item.name}</span>
-                    </div>
-                  </Link>
-                );
-              })}
+              {renderSecondaryGroup(visibleSecondary)}
             </nav>
           </div>
 

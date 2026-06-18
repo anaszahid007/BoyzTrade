@@ -59,6 +59,7 @@ function UserDetailsModal({
   const [showDelete, setShowDelete] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const fetchDetails = useCallback(async () => {
     setLoadingDetails(true);
@@ -78,31 +79,34 @@ function UserDetailsModal({
 
   const handleToggleRole = async () => {
     if (!data) return;
-    if (userId === currentUser?._id) { alert("Cannot change own role."); return; }
+    if (userId === currentUser?._id) { setErrorMsg("Cannot change own role."); return; }
     setTogglingRole(true);
+    setErrorMsg("");
     try {
       await adminService.updateUserRole(userId, data.user.role === "admin" ? "user" : "admin");
       await fetchDetails();
       onUpdate();
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { setErrorMsg(err.message); }
     finally { setTogglingRole(false); }
   };
 
   const handleToggleVerify = async () => {
     if (!data) return;
+    setErrorMsg("");
     setTogglingVerify(true);
     try {
       await adminService.toggleUserVerification(userId);
       await fetchDetails();
       onUpdate();
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { setErrorMsg(err.message); }
     finally { setTogglingVerify(false); }
   };
 
   const handleAdjustSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const amount = parseFloat(adjustAmount);
-    if (isNaN(amount) || amount === 0) { alert("Enter a valid non-zero amount"); return; }
+    if (isNaN(amount) || amount === 0) { setErrorMsg("Enter a valid non-zero amount"); return; }
+    setErrorMsg("");
     setAdjustLoading(true);
     try {
       await adminService.adjustUserBalance(userId, amount, adjustDesc);
@@ -110,19 +114,20 @@ function UserDetailsModal({
       onUpdate();
       setShowAdjust(false);
       setAdjustAmount("");
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { setErrorMsg(err.message); }
     finally { setAdjustLoading(false); }
   };
 
   const handleDeleteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (deleteConfirmText.toLowerCase() !== "delete") { alert("Type 'delete' to confirm"); return; }
+    if (deleteConfirmText.toLowerCase() !== "delete") { setErrorMsg("Type 'delete' to confirm"); return; }
+    setErrorMsg("");
     setDeleteLoading(true);
     try {
       await adminService.deleteUser(userId);
       onUpdate();
       onClose();
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { setErrorMsg(err.message); }
     finally { setDeleteLoading(false); }
   };
 
@@ -154,6 +159,16 @@ function UserDetailsModal({
         </button>
 
         <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto sidebar-scrollbar">
+          {/* Error Banner */}
+          {errorMsg && (
+            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-danger/10 border border-danger/20 text-[10px] text-danger font-medium">
+              <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+              <span className="flex-1">{errorMsg}</span>
+              <button onClick={() => setErrorMsg("")} className="p-0.5 hover:bg-white/10 rounded">
+                <X className="w-2.5 h-2.5" />
+              </button>
+            </div>
+          )}
           {/* ── Profile Header ── */}
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-success/30 to-emerald-600/30 flex items-center justify-center text-success font-bold text-sm border border-white/5 shrink-0">

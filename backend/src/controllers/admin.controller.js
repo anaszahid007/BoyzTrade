@@ -1,5 +1,5 @@
-import * as adminService from '../services/admin.service.js';
-import * as gamificationService from '../services/gamification.service.js';
+import * as adminService from '../services/admin/index.js';
+import * as gamificationService from '../services/gamification/index.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
 
 /**

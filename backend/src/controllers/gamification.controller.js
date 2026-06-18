@@ -7,7 +7,7 @@ import {
   getAllBadgesWithStatus,
   getUserQuests,
   claimQuest,
-} from '../services/gamification.service.js';
+} from '../services/gamification/index.js';
 import LevelConfig from '../models/levelConfig.model.js';
 
 export const profile = asyncHandler(async (req, res) => {

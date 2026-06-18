@@ -8,6 +8,7 @@ import { useSocket } from "@/contexts/SocketContext";
 import { tradeService, AssetSummary } from "@/services/trade";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import GatedFeature from "@/components/ui/GatedFeature";
 import {
   ArrowLeft,
   TrendingUp,
@@ -233,7 +234,9 @@ export default function AssetTradeDetailPage() {
                 </div>
               </div>
 
-              <TradingViewChart symbol={symbol} />
+              <GatedFeature feature="advanced_charting">
+                <TradingViewChart symbol={symbol} />
+              </GatedFeature>
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-white/5 rounded-lg p-2.5 border border-white/10">

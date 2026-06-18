@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useState, useEffect, useContext } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { authService, AuthUser } from "@/services/auth";
 
 interface AuthContextType {
@@ -22,7 +22,6 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -47,21 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isMounted = false;
     };
   }, []);
-
-  // Handle protected path changes
-  useEffect(() => {
-    const isProtectedPath = pathname?.startsWith("/dashboard") || 
-                            pathname?.startsWith("/auth/verification-sent") ||
-                            pathname?.startsWith("/auth/verified");
-
-    // Only attempt refresh if we don't have a user and we're not already loading.
-    // We should also check if we've already tried and failed to avoid loops.
-    // However, a simpler approach is to rely on the initial load and only
-    // trigger a refresh when explicitly needed.
-    
-    // For now, let's just ensure we don't loop by removing the automatic refresh
-    // on every path change if it's already failed.
-  }, [pathname]);
 
   async function refreshUser() {
     setLoading(true);

@@ -15,6 +15,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronRight,
+  ChevronDown,
   User as UserIcon,
   Award,
   Zap,
@@ -28,9 +29,12 @@ const navItems = [
   { name: "Users Directory", href: "/admin/users", icon: Users },
   { name: "Asset Catalog", href: "/admin/assets", icon: Database },
   { name: "Global Trade Log", href: "/admin/trades", icon: History },
+  { name: "Broadcast Center", href: "/admin/broadcast", icon: Megaphone },
+];
+
+const gamificationSubItems = [
   { name: "Badge Manager", href: "/admin/badges", icon: Award },
   { name: "Quest Manager", href: "/admin/quests", icon: Zap },
-  { name: "Broadcast Center", href: "/admin/broadcast", icon: Megaphone },
 ];
 
 const secondaryNavItems = [
@@ -46,6 +50,12 @@ export default function AdminLayout({
   const { user } = useAuth();
   const { logout } = useAuthActions();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [gamificationOpen, setGamificationOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("admin_gamification_open") === "true";
+    }
+    return false;
+  });
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("admin_sidebar_collapsed");
@@ -57,6 +67,10 @@ export default function AdminLayout({
   useEffect(() => {
     localStorage.setItem("admin_sidebar_collapsed", String(isCollapsed));
   }, [isCollapsed]);
+
+  useEffect(() => {
+    localStorage.setItem("admin_gamification_open", String(gamificationOpen));
+  }, [gamificationOpen]);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -71,9 +85,49 @@ export default function AdminLayout({
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  const activeItem = [...navItems, ...secondaryNavItems].find(item => 
+  const allNavItems = [...navItems, ...gamificationSubItems, ...secondaryNavItems];
+  const activeItem = allNavItems.find(item => 
     pathname === item.href || (item.href !== "/admin" && item.href !== "/dashboard" && pathname?.startsWith(item.href))
   );
+
+  const isGamificationActive = gamificationSubItems.some(
+    item => pathname === item.href || pathname?.startsWith(item.href)
+  );
+
+  const renderNavItem = (item: { name: string; href: string; icon: React.ComponentType<{ className?: string }> }) => {
+    const Icon = item.icon;
+    const isActive = pathname === item.href || (item.href !== "/admin" && pathname?.startsWith(item.href));
+    return (
+      <Link
+        key={item.name}
+        href={item.href}
+        title={isCollapsed ? item.name : undefined}
+        onClick={() => { if (window.innerWidth < 1024) setIsSidebarOpen(false); }}
+        className={`
+          group relative flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
+          ${isActive
+              ? "bg-success/15 text-success border border-success/20"
+              : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
+        `}
+      >
+        <div className={`flex items-center ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
+          <div className={`
+            p-1 rounded-lg transition-all duration-300
+            ${isActive ? "bg-success text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
+          `}>
+            <Icon className="w-3.5 h-3.5" />
+          </div>
+          <span className={`font-bold text-xs overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'} ${isActive ? "translate-x-0.5" : ""}`}>{item.name}</span>
+        </div>
+        {isActive && !isCollapsed && (
+          <div className="w-1 h-2.5 rounded-full bg-success shadow-[0_0_10px_#10b981]" />
+        )}
+        {isActive && isCollapsed && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-success shadow-[0_0_10px_#10b981]" />
+        )}
+      </Link>
+    );
+  };
 
   return (
     <AdminProtectedRoute>
@@ -110,40 +164,53 @@ export default function AdminLayout({
             <div className="flex-1 min-h-0 space-y-4 overflow-y-auto sidebar-scrollbar py-1">
               <nav className="space-y-0.5">
                 <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Administration</p>
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.href || (item.href !== "/admin" && pathname?.startsWith(item.href));
-                  return (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      title={isCollapsed ? item.name : undefined}
-                      onClick={() => { if (window.innerWidth < 1024) setIsSidebarOpen(false); }}
+                {navItems.slice(0, 4).map((item) => renderNavItem(item))}
+
+                {/* Gamification Dropdown */}
+                {isCollapsed ? (
+                  <div title="Gamification" className="relative">
+                    <div className={`
+                      group flex items-center justify-center w-full px-3 py-2 rounded-lg transition-all duration-300
+                      text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent
+                    `}>
+                      <div className="flex items-center justify-center w-full gap-0">
+                        <div className="p-1 rounded-lg transition-all duration-300 bg-white/5 text-muted-foreground group-hover:text-foreground">
+                          <Award className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setGamificationOpen(prev => !prev)}
                       className={`
-                        group relative flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300
-                        ${isActive
-                            ? "bg-success/15 text-success border border-success/20"
-                            : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
+                        group relative flex items-center justify-between w-full px-3 py-2 rounded-lg transition-all duration-300
+                        ${isGamificationActive
+                          ? "bg-success/15 text-success border border-success/20"
+                          : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}
                       `}
                     >
-                      <div className={`flex items-center ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
+                      <div className="flex items-center gap-2.5">
                         <div className={`
                           p-1 rounded-lg transition-all duration-300
-                          ${isActive ? "bg-success text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
+                          ${isGamificationActive ? "bg-success text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}
                         `}>
-                          <Icon className="w-3.5 h-3.5" />
+                          <Award className="w-3.5 h-3.5" />
                         </div>
-                        <span className={`font-bold text-xs overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'} ${isActive ? "translate-x-0.5" : ""}`}>{item.name}</span>
+                        <span className={`font-bold text-xs ${isGamificationActive ? "translate-x-0.5" : ""}`}>Gamification</span>
                       </div>
-                      {isActive && !isCollapsed && (
-                        <div className="w-1 h-2.5 rounded-full bg-success shadow-[0_0_10px_#10b981]" />
-                      )}
-                      {isActive && isCollapsed && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-success shadow-[0_0_10px_#10b981]" />
-                      )}
-                    </Link>
-                  );
-                })}
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${gamificationOpen ? "rotate-0" : "-rotate-90"}`} />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ${gamificationOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"}`}>
+                      <div className="ml-3 border-l border-white/5 pl-2 space-y-0.5 mt-0.5">
+                        {gamificationSubItems.map((item) => renderNavItem(item))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {navItems.slice(4).map((item) => renderNavItem(item))}
               </nav>
 
               <nav className="space-y-0.5">

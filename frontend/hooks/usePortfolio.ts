@@ -29,17 +29,13 @@ export function usePortfolio() {
   }, [fetchPortfolio]);
 
   useEffect(() => {
-    if (socket) {
-      socket.on("portfolio-update", (updatedPortfolio: PortfolioData) => {
-        setPortfolio(updatedPortfolio);
-        console.log("Real-time portfolio update received");
-      });
-    }
-
+    if (!socket) return;
+    const handlePortfolioUpdate = (updatedPortfolio: PortfolioData) => {
+      setPortfolio(updatedPortfolio);
+    };
+    socket.on("portfolio-update", handlePortfolioUpdate);
     return () => {
-      if (socket) {
-        socket.off("portfolio-update");
-      }
+      socket.off("portfolio-update", handlePortfolioUpdate);
     };
   }, [socket]);
 

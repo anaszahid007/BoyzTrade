@@ -14,10 +14,10 @@ import WalletTransaction from '../models/walletTransaction.model.js';
 import { getAssetPriceSymbol, getAssetPricesByIds } from './market.service.js';
 import { createNotification } from './notification.service.js';
 import { emitToUser } from '../socket.js';
-import { awardXP, addTradeStats } from './gamification.service.js';
+import { awardXP, addTradeStats } from './gamification/index.js';
 
 
-const INITIAL_BALANCE = 10000;
+const INITIAL_BALANCE = 2500;
 
 /**
  * Helper to handle transactions gracefully on standalone MongoDB instances (like local dev)
@@ -86,12 +86,15 @@ export const buyAsset = async (userId, { symbol, quantity }) => {
 
     if (portfolio.totalBalance < totalCost) throw new ErrorResponse(400, 'Insufficient balance');
 
+    const ROUND_DECIMALS = 8;
+
     let holding = await PortfolioHolding.findOne({ portfolioId: portfolio._id, assetId: asset._id }).session(session);
     if (holding) {
-      const newQuantity = holding.quantity + quantity;
-      const newAvgPrice = ((holding.averageBuyPrice * holding.quantity) + totalCost) / newQuantity;
+      const rawQty = holding.quantity + quantity;
+      const newQuantity = Math.round(rawQty * 10 ** ROUND_DECIMALS) / 10 ** ROUND_DECIMALS;
+      const newAvgPrice = ((holding.averageBuyPrice * holding.quantity) + totalCost) / rawQty;
       holding.quantity = newQuantity;
-      holding.averageBuyPrice = newAvgPrice;
+      holding.averageBuyPrice = Math.round(newAvgPrice * 100) / 100;
       await holding.save({ session });
     } else {
       holding = new PortfolioHolding({
@@ -173,10 +176,15 @@ export const sellAsset = async (userId, { symbol, quantity }) => {
     const balanceBefore = portfolio.totalBalance;
     const realizedPnL = totalSellValue - (holding.averageBuyPrice * quantity);
 
-    if (holding.quantity === quantity) {
+    const ROUND_DECIMALS = 8;
+    const DUST_THRESHOLD = 1e-8;
+
+    const newQuantity = Math.round((holding.quantity - quantity) * 10 ** ROUND_DECIMALS) / 10 ** ROUND_DECIMALS;
+
+    if (newQuantity <= DUST_THRESHOLD) {
       await holding.deleteOne({ session });
     } else {
-      holding.quantity -= quantity;
+      holding.quantity = newQuantity;
       await holding.save({ session });
     }
 

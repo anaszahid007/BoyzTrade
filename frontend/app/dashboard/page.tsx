@@ -18,12 +18,26 @@ import {
   LayoutDashboard,
   ArrowRight,
   Zap,
-  Flame,
   Trophy,
   BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import StreakCard from "@/components/dashboard/StreakCard";
+import DailyChallenges from "@/components/dashboard/DailyChallenges";
+import CareerPath from "@/components/dashboard/CareerPath";
+
+function SkeletonCard() {
+  return (
+    <div className="glass p-4 rounded-xl border border-white/5 space-y-3 relative overflow-hidden">
+      <div className="space-y-2">
+        <div className="h-2.5 w-24 bg-white/5 rounded animate-pulse" />
+        <div className="h-7 w-36 bg-white/5 rounded animate-pulse" />
+      </div>
+      <div className="h-4 w-16 bg-white/5 rounded-full animate-pulse" />
+    </div>
+  );
+}
 
 const container = {
   hidden: { opacity: 0 },
@@ -88,49 +102,59 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="glass p-4 rounded-xl border border-white/5 space-y-3 neon-glow-blue relative overflow-hidden group hover:scale-[1.01] transition-all duration-500">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
-            <DollarSign className="w-16 h-16" />
-          </div>
-          <div className="space-y-0.5 relative z-10">
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Available Balance</p>
-            <h2 className="text-2xl font-bold tracking-tighter">${stats.balance.toLocaleString()}</h2>
-          </div>
-          <div className="flex items-center gap-1.5 text-success text-[8px] font-bold bg-success/10 w-fit px-2 py-0.5 rounded-full border border-success/20">
-            <PlusCircle className="w-2.5 h-2.5" />
-            <span>VIRTUAL FUNDS</span>
-          </div>
-        </div>
+        {loading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <div className="glass p-4 rounded-xl border border-white/5 space-y-3 neon-glow-blue relative overflow-hidden group hover:scale-[1.01] transition-all duration-500">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity rotate-12">
+                <DollarSign className="w-16 h-16" />
+              </div>
+              <div className="space-y-0.5 relative z-10">
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Available Balance</p>
+                <h2 className="text-2xl font-bold tracking-tighter">${stats.balance.toLocaleString()}</h2>
+              </div>
+              <div className="flex items-center gap-1.5 text-success text-[8px] font-bold bg-success/10 w-fit px-2 py-0.5 rounded-full border border-success/20">
+                <PlusCircle className="w-2.5 h-2.5" />
+                <span>VIRTUAL FUNDS</span>
+              </div>
+            </div>
 
-        <div className="glass p-4 rounded-xl border border-white/5 space-y-3 relative overflow-hidden group hover:scale-[1.01] transition-all duration-500">
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            <ArrowUpRight className="w-16 h-16 text-primary" />
-          </div>
-          <div className="space-y-0.5 relative z-10">
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Total Portfolio Value</p>
-            <h2 className="text-2xl font-bold tracking-tighter">${stats.totalValue.toLocaleString()}</h2>
-          </div>
-          <div className="flex items-center gap-1.5 text-primary text-[8px] font-bold bg-primary/10 w-fit px-2 py-0.5 rounded-full border border-primary/20">
-            <ArrowUpRight className="w-2.5 h-2.5" />
-            <span>NET EQUITY</span>
-          </div>
-        </div>
+            <div className="glass p-4 rounded-xl border border-white/5 space-y-3 relative overflow-hidden group hover:scale-[1.01] transition-all duration-500">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <ArrowUpRight className="w-16 h-16 text-primary" />
+              </div>
+              <div className="space-y-0.5 relative z-10">
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Total Portfolio Value</p>
+                <h2 className="text-2xl font-bold tracking-tighter">${stats.totalValue.toLocaleString()}</h2>
+              </div>
+              <div className="flex items-center gap-1.5 text-primary text-[8px] font-bold bg-primary/10 w-fit px-2 py-0.5 rounded-full border border-primary/20">
+                <ArrowUpRight className="w-2.5 h-2.5" />
+                <span>NET EQUITY</span>
+              </div>
+            </div>
 
-        <div className={`glass p-4 rounded-xl border border-white/5 space-y-3 neon-glow-${Number(stats.pnl) >= 0 ? 'green' : 'red'} relative overflow-hidden group hover:scale-[1.01] transition-all duration-500`}>
-          <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-            {Number(stats.pnl) >= 0 ? <TrendingUp className="w-16 h-16 text-success" /> : <TrendingDown className="w-16 h-16 text-danger" />}
-          </div>
-          <div className="space-y-0.5 relative z-10">
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Overall Profit/Loss</p>
-            <h2 className={`text-2xl font-bold tracking-tighter ${Number(stats.pnl) >= 0 ? 'text-success' : 'text-danger'}`}>
-              {Number(stats.pnl) >= 0 ? '+' : ''}${Math.abs(Number(stats.pnl)).toLocaleString()}
-            </h2>
-          </div>
-          <div className={`flex items-center gap-1.5 text-[8px] font-bold w-fit px-2 py-0.5 rounded-full border ${Number(stats.pnl) >= 0 ? 'text-success bg-success/10 border-success/20' : 'text-danger bg-danger/10 border-danger/20'}`}>
-            {Number(stats.pnl) >= 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
-            <span>{stats.pnlPercent}% RETURN</span>
-          </div>
-        </div>
+            <div className={`glass p-4 rounded-xl border border-white/5 space-y-3 neon-glow-${Number(stats.pnl) >= 0 ? 'green' : 'red'} relative overflow-hidden group hover:scale-[1.01] transition-all duration-500`}>
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                {Number(stats.pnl) >= 0 ? <TrendingUp className="w-16 h-16 text-success" /> : <TrendingDown className="w-16 h-16 text-danger" />}
+              </div>
+              <div className="space-y-0.5 relative z-10">
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Overall Profit/Loss</p>
+                <h2 className={`text-2xl font-bold tracking-tighter ${Number(stats.pnl) >= 0 ? 'text-success' : 'text-danger'}`}>
+                  {Number(stats.pnl) >= 0 ? '+' : ''}${Math.abs(Number(stats.pnl)).toLocaleString()}
+                </h2>
+              </div>
+              <div className={`flex items-center gap-1.5 text-[8px] font-bold w-fit px-2 py-0.5 rounded-full border ${Number(stats.pnl) >= 0 ? 'text-success bg-success/10 border-success/20' : 'text-danger bg-danger/10 border-danger/20'}`}>
+                {Number(stats.pnl) >= 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                <span>{stats.pnlPercent}% RETURN</span>
+              </div>
+            </div>
+          </>
+        )}
       </motion.div>
 
       {/* Gamification Card */}
@@ -182,14 +206,6 @@ export default function DashboardPage() {
               {/* Mini Stats */}
               <div className="flex items-center gap-4 shrink-0">
                 <div className="text-center">
-                  <div className="flex items-center gap-1 text-amber-400 justify-center">
-                    <Flame className="w-3 h-3" />
-                    <span className="text-xs font-bold">{gamification.currentStreak}</span>
-                  </div>
-                  <p className="text-[8px] text-muted-foreground/50">Day Streak</p>
-                </div>
-                <div className="w-px h-8 bg-white/5" />
-                <div className="text-center">
                   <div className="flex items-center gap-1 text-success justify-center">
                     <BarChart3 className="w-3 h-3" />
                     <span className="text-xs font-bold">{gamification.totalTrades}</span>
@@ -207,6 +223,28 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+        </motion.div>
+      )}
+
+      {/* Streak + Daily Challenges Row */}
+      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {gamification && (
+          <StreakCard
+            currentStreak={gamification.currentStreak}
+            longestStreak={gamification.longestStreak}
+            streakMilestones={gamification.streakMilestones}
+          />
+        )}
+        <DailyChallenges
+          quests={quests}
+          claimQuest={claimQuest}
+        />
+      </motion.div>
+
+      {/* Career Path Row */}
+      {gamification?.careerPath && (
+        <motion.div variants={item}>
+          <CareerPath careerPath={gamification.careerPath} />
         </motion.div>
       )}
 
@@ -253,7 +291,7 @@ export default function DashboardPage() {
             <p className="text-[10px] text-muted-foreground">No active quests.</p>
           ) : (
             <div className="space-y-2">
-              {quests.slice(0, 4).map((quest) => (
+              {quests.filter(q => q.type !== 'daily').slice(0, 4).map((quest) => (
                 <div key={quest._id} className="flex items-center gap-2.5 p-2 rounded-lg bg-white/[0.02] border border-white/5">
                   <span className="text-lg">{quest.icon}</span>
                   <div className="flex-1 min-w-0">

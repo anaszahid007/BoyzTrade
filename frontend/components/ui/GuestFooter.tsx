@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { TrendingUp, Mail, X } from "lucide-react";
+import { Mail } from "lucide-react";
 
 export const GuestFooter = () => {
   return (

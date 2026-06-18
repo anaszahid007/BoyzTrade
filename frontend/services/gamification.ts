@@ -1,5 +1,41 @@
 import apiFetch from "@/utils/api";
 
+export interface StreakMilestone {
+  days: number;
+  xp: number;
+  label: string;
+  reached: boolean;
+  progress: number;
+}
+
+export interface CareerStageProgress {
+  trades: number;
+  level: number;
+  streak: number;
+}
+
+export interface CareerStageInfo {
+  stage: number;
+  title: string;
+  salary: number;
+  requirements: {
+    trades: number;
+    level: number;
+    streak: number | null;
+  };
+  unlocked: boolean;
+  current: boolean;
+  progress: CareerStageProgress | null;
+}
+
+export interface CareerPath {
+  currentStage: number;
+  currentTitle: string;
+  currentSalary: number;
+  stages: CareerStageInfo[];
+  nextStage: CareerStageInfo | null;
+}
+
 export interface GamificationProfile {
   xp: number;
   level: number;
@@ -8,6 +44,7 @@ export interface GamificationProfile {
   xpForCurrent: number;
   currentStreak: number;
   longestStreak: number;
+  streakMilestones: StreakMilestone[];
   totalTrades: number;
   profitableTrades: number;
   stopLossUsed: number;
@@ -16,6 +53,7 @@ export interface GamificationProfile {
   careerStage: number;
   careerTitle: string;
   virtualSalary: number;
+  careerPath: CareerPath;
   unlockedFeatures: string[];
 }
 
