@@ -51,7 +51,7 @@ export default {
     cookie: {
         secure: COOKIE_SECURE === 'true' && isProd,
         httpOnly: true,
-        sameSite: isProd ? 'none' : 'lax',
+        sameSite: isProd ? 'lax' : 'lax',
         domain: COOKIE_DOMAIN || undefined
     },
 

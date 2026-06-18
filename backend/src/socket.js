@@ -28,10 +28,11 @@ export const initSocket = (server) => {
     console.log("Client connected:", socket.id);
 
     socket.on("join-user-room", (userId) => {
-      if (userId) {
-        socket.join(`user-${userId}`);
-        console.log(`Socket ${socket.id} joined room user-${userId}`);
+      if (!userId || typeof userId !== "string" || !userId.match(/^[a-f\d]{24}$/i)) {
+        return socket.emit("error", { message: "Invalid userId format" });
       }
+      socket.join(`user-${userId}`);
+      console.log(`Socket ${socket.id} joined room user-${userId}`);
     });
 
     socket.on("disconnect", () => {

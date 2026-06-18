@@ -25,14 +25,26 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://s3.tradingview.com"],
+      imgSrc: ["'self'", "data:", "https://assets.coingecko.com", "https://coin-images.coingecko.com"],
+      connectSrc: ["'self'", env.clientUrl],
+      frameSrc: ["'self'", "https://s3.tradingview.com"],
+    },
+  },
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+  frameguard: { action: 'deny' },
+}));
 app.use(cors({ 
 	origin: env.clientUrl,
 	credentials: true 
 }));
 app.use(morgan('combined'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 app.use(compression());
 

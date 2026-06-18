@@ -13,8 +13,9 @@ import Response from '../utils/Response.js';
 import ErrorResponse from '../utils/ErrorResponse.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { generateRandomToken, hashToken } from '../utils/crypto.js';
-import { updateStreak, awardXP } from '../services/gamification.service.js';
+import { updateStreak, awardXP } from '../services/gamification/index.js';
 
+const escapeHtml = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
 const cookieOptions = {
   httpOnly: true,
@@ -84,7 +85,7 @@ export const register = asyncHandler(async (req, res) => {
     to: email,
     subject: 'Confirm your BoyzTrade email',
     html: `
-      <p>Hi ${fullName},</p>
+      <p>Hi ${escapeHtml(fullName)},</p>
       <p>Welcome to BoyzTrade! Please confirm your email by clicking the link below:</p>
       <p><a href="${verificationUrl}">Verify my email</a></p>
       <p>If the link does not work, copy and paste the following URL into your browser:</p>
@@ -139,7 +140,7 @@ export const login = asyncHandler(async (req, res) => {
       to: user.email,
       subject: 'Confirm your BoyzTrade email',
       html: `
-        <p>Hi ${user.fullName},</p>
+        <p>Hi ${escapeHtml(user.fullName)},</p>
         <p>Please confirm your email by clicking the link below:</p>
         <p><a href="${verificationUrl}">Verify my email</a></p>
         <p>If the link does not work, copy and paste the following URL into your browser:</p>
@@ -176,10 +177,10 @@ export const login = asyncHandler(async (req, res) => {
     return Response.success(res, { user: userObj, accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Logged in');
   }
 
-  // For web clients set cookies
+  // For web clients set cookies (httpOnly, not exposed in response body)
   res.cookie('refreshToken', tokens.rawRefresh, cookieOptions);
   res.cookie('accessToken', tokens.accessToken, cookieOptions);
-  return Response.success(res, { user: userObj, accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Logged in');
+  return Response.success(res, { user: userObj, accessToken: tokens.accessToken }, 'Logged in');
 });
 
 /**
@@ -250,10 +251,10 @@ export const refresh = asyncHandler(async (req, res) => {
     return Response.success(res, { accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Refreshed');
   }
 
-  // For web clients set cookies
+  // For web clients set cookies (httpOnly, not exposed in response body)
   res.cookie('refreshToken', tokens.rawRefresh, cookieOptions);
   res.cookie('accessToken', tokens.accessToken, cookieOptions);
-  return Response.success(res, { accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Refreshed');
+  return Response.success(res, { accessToken: tokens.accessToken }, 'Refreshed');
 });
 
 /**
@@ -283,7 +284,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   await VerificationToken.deleteOne({ _id: stored._id });
 
   const nextUrl = req.query.next?.toString();
-  if (nextUrl) {
+  if (nextUrl && nextUrl.startsWith(env.clientUrl)) {
     return res.redirect(nextUrl);
   }
 
@@ -325,7 +326,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
     to: user.email,
     subject: 'Confirm your BoyzTrade email',
     html: `
-      <p>Hi ${user.fullName},</p>
+      <p>Hi ${escapeHtml(user.fullName)},</p>
       <p>Please confirm your email by clicking the link below:</p>
       <p><a href="${verificationUrl}">Verify my email</a></p>
       <p>If the link does not work, copy and paste the following URL into your browser:</p>
@@ -365,8 +366,17 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     userAgent: 'password-reset'
   });
 
-  // In production, send token via email. Here we return it for testing.
-  return Response.success(res, { token: raw }, 'Password reset token created');
+  const resetUrl = `${env.clientUrl}/auth/reset-password?token=${raw}`;
+  await sendMail({
+    to: user.email,
+    subject: 'Reset your BoyzTrade password',
+    html: `<p>Hi ${escapeHtml(user.fullName)},</p><p>Click the link below to reset your password:</p><p><a href="${resetUrl}">Reset password</a></p><p>This link expires in 1 hour.</p>`
+  });
+
+  if (env.isProd) {
+    return Response.success(res, null, 'If email exists, password reset link sent');
+  }
+  return Response.success(res, { token: raw }, 'Password reset token created (dev only)');
 });
 
 /**

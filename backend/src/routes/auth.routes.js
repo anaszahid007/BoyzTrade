@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 // Middlewares
 import { protect } from '../middleware/auth.middleware.js';
-import { authLimiter } from '../middleware/rateLimiter.middleware.js';
+import { authLimiter, apiLimiter } from '../middleware/rateLimiter.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 
 // Validators
@@ -88,34 +88,34 @@ router.post('/reset-password', authLimiter, validate(resetPasswordSchema), contr
  * @desc Get current user's profile
  * @access Private
  */
-router.get('/me', protect, controller.me);
+router.get('/me', protect, apiLimiter, controller.me);
 
 /**
  * @route PATCH /api/auth/profile
  * @desc Update user profile (fullName)
  * @access Private
  */
-router.patch('/profile', protect, validate(updateProfileSchema), controller.updateProfile);
+router.patch('/profile', protect, apiLimiter, validate(updateProfileSchema), controller.updateProfile);
 
 /**
  * @route PATCH /api/auth/password
  * @desc Change password while logged in
  * @access Private
  */
-router.patch('/password', protect, validate(changePasswordSchema), controller.changePassword);
+router.patch('/password', protect, apiLimiter, validate(changePasswordSchema), controller.changePassword);
 
 /**
  * @route PATCH /api/auth/settings
  * @desc Update user settings
  * @access Private
  */
-router.patch('/settings', protect, validate(updateSettingsSchema), controller.updateSettings);
+router.patch('/settings', protect, apiLimiter, validate(updateSettingsSchema), controller.updateSettings);
 
 /**
  * @route PATCH /api/auth/survey
  * @desc Submit onboarding survey
  * @access Private
  */
-router.patch('/survey', protect, controller.submitSurvey);
+router.patch('/survey', protect, apiLimiter, controller.submitSurvey);
 
 export default router;

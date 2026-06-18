@@ -20,7 +20,7 @@ export default async function ({ to, subject, text, html }) {
         const transporter = nodemailer.createTransport({
             host,
             port,
-            secure: false,
+            secure: port === 465,
             auth: { user, pass }
         });
 

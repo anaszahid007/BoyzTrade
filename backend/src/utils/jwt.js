@@ -1,8 +1,11 @@
 import jwt from 'jsonwebtoken';
 import env from '../config/env.js';
 
-const JWT_ACCESS_SECRET = env.jwt.access.secret || 'change-me-access';
-const JWT_REFRESH_SECRET = env.jwt.refresh.secret || 'change-me-refresh';
+if (!env.jwt.access.secret) throw new Error('JWT_ACCESS_SECRET is not configured');
+if (!env.jwt.refresh.secret) throw new Error('JWT_REFRESH_SECRET is not configured');
+
+const JWT_ACCESS_SECRET = env.jwt.access.secret;
+const JWT_REFRESH_SECRET = env.jwt.refresh.secret;
 const JWT_ACCESS_EXPIRES = env.jwt.access.expiresIn || '7d';
 const JWT_REFRESH_EXPIRES = env.jwt.refresh.expiresIn || '30d';
 
