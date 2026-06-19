@@ -2,7 +2,7 @@ import redisClient from "../config/redis.js";
 
 /** Shared cache TTLs (seconds) — keep in sync with broadcast interval */
 export const CACHE_TTL = {
-    MARKET_ASSETS: 60,       // 1 min — market list prices
+    MARKET_ASSETS: 120,       // 2 min — market list prices
     ASSET_DETAIL: 60,        // 1 min — single asset with live price
     ASSET_SEARCH: 60 * 60,   // 1 hour — static coin metadata from search
 };

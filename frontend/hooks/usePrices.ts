@@ -52,6 +52,8 @@ export function usePrices({ perPage = 50 }: UsePricesOptions = {}) {
 
   useEffect(() => {
     fetchPrices();
+    const interval = setInterval(fetchPrices, 60000);
+    return () => { clearInterval(interval); };
   }, [fetchPrices]);
 
   useEffect(() => {
