@@ -20,8 +20,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
     const socketInstance = io(process.env.NEXT_PUBLIC_API_URL, {
-      withCredentials: true,
+      auth: { refreshToken: stored },
     });
 
     socketInstance.on("connect", () => {

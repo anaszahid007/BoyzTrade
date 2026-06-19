@@ -172,15 +172,7 @@ export const login = asyncHandler(async (req, res) => {
   updateStreak(user._id).catch(() => {});
   awardXP(user._id, 5, 'daily_login').catch(() => {});
 
-  // For mobile clients return refresh token in response
-  if (req.headers['x-client-type'] === 'mobile') {
-    return Response.success(res, { user: userObj, accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Logged in');
-  }
-
-  // For web clients set cookies (httpOnly, not exposed in response body)
-  res.cookie('refreshToken', tokens.rawRefresh, cookieOptions);
-  res.cookie('accessToken', tokens.accessToken, cookieOptions);
-  return Response.success(res, { user: userObj, accessToken: tokens.accessToken }, 'Logged in');
+  return Response.success(res, { user: userObj, accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Logged in');
 });
 
 /**
@@ -189,17 +181,11 @@ export const login = asyncHandler(async (req, res) => {
  * @access Public
  */
 export const logout = asyncHandler(async (req, res) => {
-  const raw = req.cookies?.refreshToken || req.body?.refreshToken;
-
-  // Invalidate the refresh token
+  const raw = req.body?.refreshToken;
   if (raw) {
     const tokenHash = hashToken(raw);
     await RefreshToken.deleteOne({ tokenHash });
   }
-
-  // Clear cookies
-  res.clearCookie('refreshToken');
-  res.clearCookie('accessToken');
   return Response.success(res, null, 'Logged out');
 });
 
@@ -209,32 +195,19 @@ export const logout = asyncHandler(async (req, res) => {
  * @access Public
  */
 export const refresh = asyncHandler(async (req, res) => {
-  const raw = req.cookies?.refreshToken || req.body?.refreshToken;
-  if (!raw) {
-    res.clearCookie('refreshToken');
-    res.clearCookie('accessToken');
-    throw new ErrorResponse(401, 'No refresh token');
-  }
+  const raw = req.body?.refreshToken;
+  if (!raw) throw new ErrorResponse(401, 'No refresh token');
 
-  // Verify refresh token exists and is not expired
   const tokenHash = hashToken(raw);
   const stored = await RefreshToken.findOne({ tokenHash });
-  if (!stored) {
-    res.clearCookie('refreshToken');
-    res.clearCookie('accessToken');
-    throw new ErrorResponse(401, 'Invalid refresh token');
-  }
+  if (!stored) throw new ErrorResponse(401, 'Invalid refresh token');
   if (stored.expiresAt < new Date()) {
     await RefreshToken.deleteOne({ _id: stored._id });
-    res.clearCookie('refreshToken');
-    res.clearCookie('accessToken');
     throw new ErrorResponse(401, 'Refresh token expired');
   }
 
-  // Revoke old token
   await RefreshToken.deleteOne({ _id: stored._id });
 
-  // Create new tokens
   const tokens = await createTokens(stored.userId);
   const ip = req.ip;
   const ua = req.get('user-agent') || '';
@@ -246,15 +219,7 @@ export const refresh = asyncHandler(async (req, res) => {
     userAgent: ua
   });
 
-  // For mobile clients return refresh token in response
-  if (req.headers['x-client-type'] === 'mobile') {
-    return Response.success(res, { accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Refreshed');
-  }
-
-  // For web clients set cookies (httpOnly, not exposed in response body)
-  res.cookie('refreshToken', tokens.rawRefresh, cookieOptions);
-  res.cookie('accessToken', tokens.accessToken, cookieOptions);
-  return Response.success(res, { accessToken: tokens.accessToken }, 'Refreshed');
+  return Response.success(res, { accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Refreshed');
 });
 
 /**

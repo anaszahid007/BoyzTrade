@@ -1,4 +1,4 @@
-import apiFetch from "@/utils/api";
+import apiFetch, { setTokens, clearTokens } from "@/utils/api";
 
 export interface AuthUser {
   _id: string;
@@ -6,6 +6,13 @@ export interface AuthUser {
   fullName?: string;
   surveyCompleted?: boolean;
   [key: string]: any;
+}
+
+async function handleLoginResponse(res: { user: AuthUser; accessToken: string; refreshToken?: string }) {
+  if (res.accessToken && res.refreshToken) {
+    setTokens(res.accessToken, res.refreshToken);
+  }
+  return res.user;
 }
 
 export const authService = {
@@ -17,15 +24,15 @@ export const authService = {
   },
 
   async login(email: string, password: string): Promise<AuthUser> {
-    const response = await apiFetch<{ user: AuthUser }>("/api/auth/login", {
+    const response = await apiFetch<{ user: AuthUser; accessToken: string; refreshToken?: string }>("/api/auth/login", {
       method: "POST",
       data: { email, password },
     });
-    return response.data.user;
+    return handleLoginResponse(response.data);
   },
 
   async register(email: string, password: string, fullName?: string): Promise<AuthUser> {
-    const response = await apiFetch<{ user: AuthUser }>("/api/auth/register", {
+    const response = await apiFetch<{ user: AuthUser; accessToken: string; refreshToken?: string }>("/api/auth/register", {
       method: "POST",
       data: { email, fullName, password },
     });
@@ -33,15 +40,15 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    await apiFetch<void>("/api/auth/logout", {
-      method: "POST",
-    });
-  },
-
-  async refresh(): Promise<void> {
-    await apiFetch<void>("/api/auth/refresh", {
-      method: "POST",
-    });
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+    try {
+      await apiFetch<void>("/api/auth/logout", {
+        method: "POST",
+        data: stored ? { refreshToken: stored } : undefined,
+      });
+    } finally {
+      clearTokens();
+    }
   },
 
   async resendVerification(email?: string): Promise<void> {

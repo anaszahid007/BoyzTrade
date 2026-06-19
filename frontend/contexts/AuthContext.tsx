@@ -3,6 +3,7 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { authService, AuthUser } from "@/services/auth";
+import { setTokens, clearTokens } from "@/utils/api";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -25,15 +26,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Initial load
+  const syncUser = (user: AuthUser | null) => {
+    setUser(user);
+    if (!user) clearTokens();
+  };
+
   useEffect(() => {
     let isMounted = true;
 
     const loadUser = async () => {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+      if (!stored) {
+        if (isMounted) { setUser(null); setLoading(false); }
+        return;
+      }
+
       try {
         const currentUser = await authService.me();
         if (isMounted) setUser(currentUser);
-      } catch (error) {
+      } catch {
         if (isMounted) setUser(null);
       } finally {
         if (isMounted) setLoading(false);
@@ -42,9 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     loadUser();
 
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, []);
 
   async function refreshUser() {
@@ -60,16 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    try {
-      await authService.logout();
-      setUser(null);
-      router.push("/auth/login");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
+    await authService.logout();
   }
 
-  const value = { user, loading, logout, refreshUser, setUser };
+  const value = { user, loading, logout, refreshUser, setUser: syncUser };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
