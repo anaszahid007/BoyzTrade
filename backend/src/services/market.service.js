@@ -298,61 +298,86 @@ export const getOrCreateAssetBySymbol = async (symbol) => {
             }
         }
 
-        // 2. Asset not in database - fetch from CoinGecko and create it
+        // 2. Asset not in database - try CoinGecko search, fall back to placeholder
         const searchCacheKey = `asset:search:${normalizedSymbol}`;
         const cachedSearch = await getCachedValue(searchCacheKey);
         let coin;
+        let coinFound = false;
 
         if (cachedSearch) {
             coin = cachedSearch;
+            coinFound = true;
         } else {
-            const searchResponse = await axios.get(`${COINGECKO_API}/search`, {
-                params: { query: normalizedSymbol }
-            });
+            try {
+                const searchResponse = await axios.get(`${COINGECKO_API}/search`, {
+                    params: { query: normalizedSymbol }
+                });
 
-            coin = searchResponse.data.coins.find((c) => c.symbol.toUpperCase() === normalizedSymbol) || searchResponse.data.coins[0];
-            if (!coin) {
-                throw new ErrorResponse(404, `Asset with symbol ${symbol} not found in CoinGecko`);
+                coin = searchResponse.data.coins.find((c) => c.symbol.toUpperCase() === normalizedSymbol) || searchResponse.data.coins[0];
+                if (coin) {
+                    coinFound = true;
+                    await setCachedValue(searchCacheKey, coin, CACHE_TTL.ASSET_SEARCH);
+                }
+            } catch {
+                console.warn(`CoinGecko search failed for ${normalizedSymbol}, creating placeholder`);
             }
-
-            await setCachedValue(searchCacheKey, coin, CACHE_TTL.ASSET_SEARCH);
         }
 
-        // 3. Fetch market data for the coin
-        const marketData = await axios.get(`${COINGECKO_API}/simple/price`, {
-            params: {
-                ids: coin.id,
-                vs_currencies: 'usd',
-                include_24hr_change: true,
-                include_market_cap: true
+        if (coinFound) {
+            try {
+                const marketData = await axios.get(`${COINGECKO_API}/simple/price`, {
+                    params: { ids: coin.id, vs_currencies: 'usd', include_24hr_change: true, include_market_cap: true }
+                });
+                const priceData = marketData.data[coin.id];
+
+                const newAsset = await Asset.create({
+                    assetId: coin.id,
+                    symbol: coin.symbol.toUpperCase(),
+                    name: coin.name,
+                    marketType: 'crypto',
+                    currentPrice: priceData?.usd || 0,
+                    logo: coin.thumb || `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${coin.id}.png`
+                });
+
+                const assetResponse = {
+                    symbol: newAsset.symbol,
+                    name: newAsset.name,
+                    market_type: newAsset.marketType,
+                    current_price: priceData?.usd || 0,
+                    logo: newAsset.logo,
+                    market_cap: priceData?.usd_market_cap || 0,
+                    price_change_24h: priceData?.usd_24h_change || 0,
+                    last_updated: new Date().toISOString()
+                };
+
+                await setCachedValue(cacheKey, assetResponse, CACHE_TTL.ASSET_DETAIL);
+                return assetResponse;
+            } catch (err) {
+                console.warn(`CoinGecko price fetch failed for ${coin?.id}, creating placeholder for ${normalizedSymbol}:`, err.message);
             }
-        });
+        }
 
-        const priceData = marketData.data[coin.id];
-
-        // 4. Create new asset in database
-        const newAsset = await Asset.create({
-            assetId: coin.id,
-            symbol: coin.symbol.toUpperCase(),
-            name: coin.name,
+        // 3. Create placeholder asset (CoinGecko unavailable or symbol not found)
+        const placeholder = await Asset.create({
+            symbol: normalizedSymbol,
+            name: symbol.toUpperCase(),
             marketType: 'crypto',
-            currentPrice: priceData?.usd || 0,
-            logo: coin.thumb || `https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/32/color/${coin.id}.png`
+            currentPrice: 0,
         });
 
-        const assetResponse = {
-            symbol: newAsset.symbol,
-            name: newAsset.name,
-            market_type: newAsset.marketType,
-            current_price: priceData?.usd || 0,
-            logo: newAsset.logo,
-            market_cap: priceData?.usd_market_cap || 0,
-            price_change_24h: priceData?.usd_24h_change || 0,
+        const placeholderResponse = {
+            symbol: placeholder.symbol,
+            name: placeholder.name,
+            market_type: placeholder.marketType,
+            current_price: 0,
+            logo: null,
+            market_cap: 0,
+            price_change_24h: 0,
             last_updated: new Date().toISOString()
         };
 
-        await setCachedValue(cacheKey, assetResponse, CACHE_TTL.ASSET_DETAIL);
-        return assetResponse;
+        await setCachedValue(cacheKey, placeholderResponse, CACHE_TTL.ASSET_DETAIL);
+        return placeholderResponse;
 
     } catch (error) {
         if (error instanceof ErrorResponse) throw error;
