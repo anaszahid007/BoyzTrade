@@ -36,7 +36,9 @@ export const authService = {
       method: "POST",
       data: { email, fullName, password },
     });
-    return response.data.user;
+    // This will set tokens and return the user
+     return handleLoginResponse(response.data); // - TEMPRORYY BYPASS EMAIL VERIFICATION
+    // return response.data.user;
   },
 
   async logout(): Promise<void> {

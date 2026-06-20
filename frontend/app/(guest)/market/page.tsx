@@ -231,7 +231,7 @@ export default function MarketPage() {
         <div className="max-w-4xl mx-auto glass p-16 rounded-[4rem] border border-success/10 bg-gradient-to-br from-success/5 to-transparent text-center space-y-8">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Don&apos;t just watch. <span className="text-success">Practice.</span></h2>
            <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-             Watching prices is the first step. Executing trades is where the real learning happens. Get $10,000 in virtual funds now.
+             Watching prices is the first step. Executing trades is where the real learning happens. Get $2500 in virtual funds now.
            </p>
            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/auth/register">

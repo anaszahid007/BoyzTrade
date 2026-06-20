@@ -12,7 +12,7 @@ import { useState } from "react";
 const chartPath = "M0,80 C20,80 30,40 60,40 C90,40 100,60 130,60 C160,60 170,30 200,30 C230,30 240,50 270,50 C300,50 310,20 340,20 C370,20 380,35 400,35";
 
 const perks = [
-  { icon: TrendingUp, title: "$10,000 Virtual Funds", desc: "Start trading with risk-free virtual capital." },
+  { icon: TrendingUp, title: "$2500 Virtual Funds", desc: "Start trading with risk-free virtual capital." },
   { icon: BarChart3, title: "Real Market Data", desc: "Live prices powered by real-time market feeds." },
   { icon: Users, title: "Community Driven", desc: "Join thousands of traders mastering the market." },
   { icon: Shield, title: "Zero Risk", desc: "Practice strategies without losing real money." },
@@ -62,7 +62,7 @@ export default function RegisterPage() {
               Create Your <span className="text-success">Account</span>
             </h1>
             <p className="text-muted-foreground text-sm">
-              Start with $10,000 in virtual funds — no risk, no credit card.
+              Start with $2500 in virtual funds — no risk, no credit card.
             </p>
           </div>
 

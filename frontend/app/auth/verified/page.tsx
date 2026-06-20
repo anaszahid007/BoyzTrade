@@ -39,7 +39,7 @@ export default function VerifiedPage() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            Welcome to the future of virtual trading. Your $10,000 practice balance is waiting for you in the dashboard.
+            Welcome to the future of virtual trading. Your $2500 practice balance is waiting for you in the dashboard.
           </p>
 
           <Link href={user ? "/dashboard" : "/auth/login"} className="block w-full">

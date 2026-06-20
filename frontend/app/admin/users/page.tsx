@@ -643,7 +643,7 @@ export default function UsersManagement() {
                       )}
                     </td>
                     <td className="px-4 py-3.5 text-right font-mono text-xs font-bold tracking-tight">
-                      ${(item.portfolio?.totalBalance ?? 10000).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      ${(item.portfolio?.totalBalance ?? 2500).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </td>
                     <td className="px-4 py-3.5 text-right text-[10px] text-muted-foreground font-mono">
                       {new Date(item.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}

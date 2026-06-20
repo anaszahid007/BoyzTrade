@@ -60,7 +60,7 @@ export const getUsersList = async ({ page = 1, limit = 20, search = '', role = '
         totalProfitLoss: portfolio.totalProfitLoss,
         totalAssets: portfolio.totalAssets
       } : {
-        totalBalance: 10000,
+        totalBalance: 2500,
         totalProfitLoss: 0,
         totalAssets: 0
       },

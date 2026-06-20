@@ -171,7 +171,7 @@ export default function LoginPage() {
               <span className="text-success">Without the Risk</span>
             </h2>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              Practice trading with $10,000 in virtual funds. Real market data, zero financial risk.
+              Practice trading with $2500 in virtual funds. Real market data, zero financial risk.
             </p>
           </div>
 

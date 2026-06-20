@@ -58,7 +58,7 @@ const features = [
   {
     icon: ShieldCheck,
     title: "Risk-Free Learning",
-    desc: "Start with $10,000 in virtual capital. Every strategy, every mistake — learned without losing real money.",
+    desc: "Start with $2500 in virtual capital. Every strategy, every mistake — learned without losing real money.",
   },
   {
     icon: CandlestickChart,
@@ -163,7 +163,7 @@ function HeroSection() {
             <motion.div className="space-y-8">
 
             <motion.h1 {...fadeUp} className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[0.92]">
-              <span className="text-muted-foreground">$10,000 Virtual.</span><br />
+              <span className="text-muted-foreground">$2500 Virtual.</span><br />
               <span>Real Markets.</span><br />
               <span className="text-success">Zero Risk.</span>
             </motion.h1>
@@ -242,12 +242,12 @@ function HeroSection() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.04]">
                     <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Balance</p>
-                    <p className="text-xl font-bold tracking-tight">$10,000</p>
+                    <p className="text-xl font-bold tracking-tight">$2,500</p>
                     <p className="text-[9px] text-success font-bold mt-1">VIRTUAL FUNDS</p>
                   </div>
                   <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.04]">
                     <p className="text-[9px] text-muted-foreground uppercase tracking-widest mb-1">Total Value</p>
-                    <p className="text-xl font-bold tracking-tight">$10,241</p>
+                    <p className="text-xl font-bold tracking-tight">$2,602.50</p>
                     <p className="text-[9px] text-success font-bold mt-1">+$241.32 P&L</p>
                   </div>
                 </div>
@@ -382,8 +382,8 @@ function HowItWorks() {
     {
       icon: Wallet,
       title: "Get Instantly Funded",
-      desc: "Every new account receives $10,000 in virtual USD automatically. Start trading immediately.",
-      stat: "$10,000 credit",
+      desc: "Every new account receives $2,500 in virtual USD automatically. Start trading immediately.",
+      stat: "$2,500 credit",
     },
     {
       icon: TrendingUp,
@@ -637,7 +637,7 @@ function FinalCTA() {
               Ready to Trade Like a <span className="text-success">Pro?</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-lg mx-auto mt-6 leading-relaxed">
-              Join thousands of traders who started their journey risk-free. Your $10,000 virtual account is waiting.
+              Join thousands of traders who started their journey risk-free. Your $2,500 virtual account is waiting.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
               <Link href="/auth/register">

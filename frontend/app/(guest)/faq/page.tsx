@@ -19,12 +19,12 @@ import Link from "next/link";
 const faqs = [
   {
     question: "Is Boyz Trade a real crypto exchange?",
-    answer: "No. Boyz Trade is a 100% virtual trading simulator designed for educational purposes. We use real market data, but you are trading with virtual funds ($10,000 USD) and cannot lose or withdraw real money.",
+    answer: "No. Boyz Trade is a 100% virtual trading simulator designed for educational purposes. We use real market data, but you are trading with virtual funds ($2,500 USD) and cannot lose or withdraw real money.",
     icon: ShieldCheck
   },
   {
     question: "Do I need to deposit any money to start?",
-    answer: "Absolutely not. Boyz Trade is completely free to use. Every new account is automatically funded with $10,000 in virtual simulation credits.",
+    answer: "Absolutely not. Boyz Trade is completely free to use. Every new account is automatically funded with $2,500 in virtual simulation credits.",
     icon: DollarSign
   },
   {
@@ -34,7 +34,7 @@ const faqs = [
   },
   {
     question: "Can I reset my virtual balance?",
-    answer: "Currently, the MVP version provides a one-time $10,000 balance. We are working on a feature that will allow users to reset their simulation once they've reached a certain level of experience.",
+    answer: "Currently, the MVP version provides a one-time $2,500 balance. We are working on a feature that will allow users to reset their simulation once they've reached a certain level of experience.",
     icon: Zap
   },
   {

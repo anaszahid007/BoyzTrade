@@ -47,7 +47,7 @@ export default function AboutPage() {
             </div>
             <h2 className="text-3xl font-bold">Our Solution</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We've created a high-fidelity virtual environment. By using real-time market data from CoinGecko and $10,000 in virtual funds, we provide a "Flight Simulator" experience for finance.
+              We've created a high-fidelity virtual environment. By using real-time market data from CoinGecko and $2,500 in virtual funds, we provide a "Flight Simulator" experience for finance.
             </p>
           </div>
         </div>

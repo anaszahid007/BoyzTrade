@@ -26,7 +26,7 @@ export const adjustUserBalance = async (userId, { amount, description = 'Admin A
 
     let portfolio = await Portfolio.findOne({ userId }).session(session);
     if (!portfolio) {
-      portfolio = new Portfolio({ userId, totalBalance: 10000, totalAssets: 0, totalProfitLoss: 0 });
+      portfolio = new Portfolio({ userId, totalBalance: 2500, totalAssets: 0, totalProfitLoss: 0 });
     }
 
     const balanceBefore = portfolio.totalBalance;

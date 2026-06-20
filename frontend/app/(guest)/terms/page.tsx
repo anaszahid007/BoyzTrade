@@ -145,7 +145,7 @@ export default function TermsOfServicePage() {
               </h2>
               <div className="space-y-3">
                 <p className="text-muted-foreground leading-relaxed">
-                  Upon registration, each new account receives $10,000 in virtual USD. These funds:
+                  Upon registration, each new account receives $2500 in virtual USD. These funds:
                 </p>
                 <ul className="space-y-1 text-muted-foreground list-disc list-inside ml-4">
                   <li>Have no real-world monetary value</li>

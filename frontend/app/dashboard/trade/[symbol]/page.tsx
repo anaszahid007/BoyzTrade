@@ -234,9 +234,9 @@ export default function AssetTradeDetailPage() {
                 </div>
               </div>
 
-              <GatedFeature feature="advanced_charting">
+              {/* <GatedFeature feature="advanced_charting"> */}
                 <TradingViewChart symbol={symbol} />
-              </GatedFeature>
+              {/* </GatedFeature> */}
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-white/5 rounded-lg p-2.5 border border-white/10">

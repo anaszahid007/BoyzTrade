@@ -15,7 +15,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import { generateRandomToken, hashToken } from '../utils/crypto.js';
 import { updateStreak, awardXP } from '../services/gamification/index.js';
 
-const escapeHtml = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const cookieOptions = {
   httpOnly: true,
@@ -63,39 +63,57 @@ export const register = asyncHandler(async (req, res) => {
   if (existing) throw new ErrorResponse(400, 'Email already exists');
 
   // Create new user
-  const user = new User({ email, fullName, password });
+  const user = new User({ email, fullName, password, isVerified: true });
   await user.save();
 
-  // Generate email verification token
-  const verificationTokenRaw = generateRandomToken();
-  const verificationTokenHash = hashToken(verificationTokenRaw);
-  const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
-
-  await VerificationToken.create({
+  // Create tokens start - temproryy bypass email verification
+  const tokens = await createTokens(user._id);
+  await RefreshToken.create({
     userId: user._id,
-    tokenHash: verificationTokenHash,
-    expiresAt: verificationExpires
+    tokenHash: tokens.tokenHash,
+    expiresAt: tokens.expiresAt
   });
 
-  const verificationUrl = `${env.backendUrl}/api/auth/verify-email?token=${verificationTokenRaw}&next=${encodeURIComponent(
-    `${env.clientUrl}/auth/verified`
-  )}`;
+  const userObj = { email: user.email, fullName: user.fullName };
+  return Response.success(res,
+    { user: userObj, accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh },
+    'Registered successfully.',
+    201
+  );
+  // end - temproryy bypass email verification
 
-  await sendMail({
-    to: email,
-    subject: 'Confirm your BoyzTrade email',
-    html: `
-      <p>Hi ${escapeHtml(fullName)},</p>
-      <p>Welcome to BoyzTrade! Please confirm your email by clicking the link below:</p>
-      <p><a href="${verificationUrl}">Verify my email</a></p>
-      <p>If the link does not work, copy and paste the following URL into your browser:</p>
-      <p>${verificationUrl}</p>
-      <p>Thank you for joining BoyzTrade!</p>
-    `
-  });
 
-  const userObj = { email: user.email, fullName: user.fullName, isVerified: user.isVerified };
-  return Response.success(res, { user: userObj }, 'Registered successfully. Please verify your email before logging in.', 201);
+  // // Generate email verification token
+  // const verificationTokenRaw = generateRandomToken();
+  // const verificationTokenHash = hashToken(verificationTokenRaw);
+  // const verificationExpires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
+
+  // const token = await VerificationToken.create({
+  //   userId: user._id,
+  //   tokenHash: verificationTokenHash,
+  //   expiresAt: verificationExpires
+  // });
+
+  // const verificationUrl = `${env.backendUrl}/api/auth/verify-email?token=${verificationTokenRaw}&next=${encodeURIComponent(
+  //   `${env.clientUrl}/auth/verified`
+  // )}`;
+
+  // await sendMail({
+  //   to: email,
+  //   subject: 'Confirm your BoyzTrade email',
+  //   html: `
+  //     <p>Hi ${escapeHtml(fullName)},</p>
+  //     <p>Welcome to BoyzTrade! Please confirm your email by clicking the link below:</p>
+  //     <p><a href="${verificationUrl}">Verify my email</a></p>
+  //     <p>If the link does not work, copy and paste the following URL into your browser:</p>
+  //     <p>${verificationUrl}</p>
+  //     <p>Thank you for joining BoyzTrade!</p>
+  //   `
+  // });
+
+  // const userObj = { email: user.email, fullName: user.fullName };
+  // return Response.success(res, { user: userObj }, 'Registered successfully. Please verify your email before logging in.', 201);
+
 });
 
 
@@ -116,7 +134,7 @@ export const login = asyncHandler(async (req, res) => {
   // Compare password
   const isValid = await user.comparePassword(password);
   if (!isValid) throw new ErrorResponse(401, 'Invalid credentials');
-  
+
   if (!user.isVerified) {
     // Generate new email verification token
     const verificationTokenRaw = generateRandomToken();
@@ -149,9 +167,9 @@ export const login = asyncHandler(async (req, res) => {
       `
     });
 
-    return Response.error(res, 'Email not verified. A new verification link has been sent to your email.', 403, { 
+    return Response.error(res, 'Email not verified. A new verification link has been sent to your email.', 403, {
       requiresVerification: true,
-      email: user.email 
+      email: user.email
     });
   }
 
@@ -169,8 +187,8 @@ export const login = asyncHandler(async (req, res) => {
   delete userObj.passwordHash;
 
   // Gamification: daily login streak + XP
-  updateStreak(user._id).catch(() => {});
-  awardXP(user._id, 5, 'daily_login').catch(() => {});
+  updateStreak(user._id).catch(() => { });
+  awardXP(user._id, 5, 'daily_login').catch(() => { });
 
   return Response.success(res, { user: userObj, accessToken: tokens.accessToken, refreshToken: tokens.rawRefresh }, 'Logged in');
 });
