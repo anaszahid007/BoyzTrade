@@ -6,27 +6,46 @@
   --color-success: #10b981;
   --color-danger: #ef4444;
   --color-warning: #f59e0b;
-  
+
   --color-bg-dark: #0a0b10;
   --color-bg-card: #151921;
   --color-bg-border: #262c36;
-  
+
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.55;
+  }
 }
 
 @keyframes slide-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 :root {
@@ -56,6 +75,7 @@
   * {
     border-color: var(--border);
   }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
@@ -72,29 +92,57 @@
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.05);
   }
-  
+
   .neon-glow-blue {
     box-shadow: 0 0 15px -3px rgba(59, 130, 246, 0.3);
   }
-  
+
   .neon-glow-green {
     box-shadow: 0 0 15px -3px rgba(16, 185, 129, 0.3);
   }
-  
+
   .neon-glow-red {
     box-shadow: 0 0 15px -3px rgba(239, 68, 68, 0.3);
   }
-  
+
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-500;
   }
 
-  .sidebar-scrollbar {
+  /* .sidebar-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
   .sidebar-scrollbar::-webkit-scrollbar {
     display: none;
+  } */
+
+  .sidebar-scrollbar {
+    scrollbar-width: thin;
+    /* Firefox */
+    scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  }
+
+  /* Chrome, Edge, Safari */
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    transition: background 0.2s ease;
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .sidebar-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }
-

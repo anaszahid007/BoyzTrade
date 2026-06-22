@@ -66,7 +66,7 @@ export default function DailyChallenges({ quests, claimQuest, onClaimAll }: Dail
       </div>
 
       {/* Challenge Cards */}
-      <div className="space-y-2">
+      <div className="space-y-2 max-h-60 overflow-y-auto sidebar-scrollbar">
         {dailyQuests.map((quest, idx) => (
           <motion.div
             key={quest._id}
