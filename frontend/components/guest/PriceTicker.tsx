@@ -1,5 +1,3 @@
-import { Activity } from "lucide-react";
-
 const tickerAssets = [
   { symbol: "BTC", price: 67432, change: 2.41 },
   { symbol: "ETH", price: 3456, change: 1.82 },

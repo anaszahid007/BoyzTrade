@@ -1,4 +1,6 @@
 import { Send } from "lucide-react";
+import telegramLogo from "@/public/images/Telegram_logo.svg.webp"
+import Image from "next/image";
 
 export default function FloatingTelegramButton() {
   return (
@@ -26,9 +28,8 @@ export default function FloatingTelegramButton() {
         target="_blank"
         rel="noopener noreferrer"
         className="
-          relative flex h-16 w-16 items-center justify-center
+          relative flex  items-center justify-center
           rounded-full
-          bg-linear-to-br from-sky-400 via-sky-500 to-cyan-500
           text-white
           shadow-[0_0_30px_rgba(34,158,217,0.6)]
           transition-all duration-300
@@ -37,7 +38,7 @@ export default function FloatingTelegramButton() {
           hover:shadow-[0_0_60px_rgba(34,158,217,0.9)]
         "
       >
-        <Send className="h-7 w-7" />
+        <Image src={telegramLogo} alt="Telegram" className="h-16 w-16" />
       </a>
     </div>
   );
