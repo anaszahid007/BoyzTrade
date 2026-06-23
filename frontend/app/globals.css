@@ -12,6 +12,9 @@
   --color-bg-border: #262c36;
 
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-slow: marquee 60s linear infinite;
 }
 
 @keyframes marquee {

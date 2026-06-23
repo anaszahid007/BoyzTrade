@@ -26,17 +26,6 @@ import {
 import { Button } from "@/components/ui/Button";
 import { useRef } from "react";
 
-const tickerAssets = [
-  { symbol: "BTC", price: 67432, change: 2.41 },
-  { symbol: "ETH", price: 3456, change: 1.82 },
-  { symbol: "SOL", price: 143.28, change: -0.63 },
-  { symbol: "AVAX", price: 38.92, change: 5.14 },
-  { symbol: "LINK", price: 17.65, change: -1.23 },
-  { symbol: "MATIC", price: 0.72, change: 3.87 },
-  { symbol: "DOT", price: 7.84, change: 0.95 },
-  { symbol: "UNI", price: 9.43, change: -2.18 },
-];
-
 const topAssets = [
   { symbol: "BTC", name: "Bitcoin", price: 67432, change: 2.41, sparkline: [65, 68, 64, 70, 72, 69, 74, 76] },
   { symbol: "ETH", name: "Ethereum", price: 3456, change: 1.82, sparkline: [32, 34, 33, 36, 35, 37, 38, 36] },
@@ -114,36 +103,6 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   );
 }
 
-function PriceTicker() {
-  return (
-    <div className="relative z-40 border-b border-white/[0.03] bg-white/[0.02] backdrop-blur-sm">
-      <div className="flex items-center">
-        <div className="shrink-0 flex items-center gap-2 px-4 py-2 bg-success/10 border-r border-white/[0.03]">
-          <Activity className="w-3 h-3 text-success" />
-          <span className="text-[9px] font-bold text-success uppercase tracking-widest">Live</span>
-        </div>
-        <div className="overflow-hidden flex-1">
-          <div className="flex animate-marquee" style={{ width: "max-content" }}>
-            {[...Array(2)].map((_, repeat) => (
-              <div key={repeat} className="flex items-center gap-8 px-6">
-                {tickerAssets.map((asset) => (
-                  <div key={`${repeat}-${asset.symbol}`} className="flex items-center gap-3 py-1.5">
-                    <span className="text-[11px] font-bold text-muted-foreground">{asset.symbol}</span>
-                    <span className="text-[11px] font-mono font-bold tabular-nums">${asset.price.toLocaleString()}</span>
-                    <span className={`flex items-center gap-0.5 text-[10px] font-bold ${asset.change >= 0 ? "text-success" : "text-danger"}`}>
-                      <span className={`inline-block w-0 h-0 border-l-[3px] border-r-[3px] ${asset.change >= 0 ? "border-b-[4px] border-b-current border-l-transparent border-r-transparent" : "border-t-[4px] border-t-current border-l-transparent border-r-transparent"}`} />
-                      {Math.abs(asset.change)}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function HeroSection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -672,7 +631,6 @@ function FinalCTA() {
 export default function LandingPage() {
   return (
     <main className="min-h-screen bg-bg-dark text-foreground selection:bg-success/30 overflow-x-hidden">
-      <PriceTicker />
       <HeroSection />
       <MarketPreview />
       <HowItWorks />
