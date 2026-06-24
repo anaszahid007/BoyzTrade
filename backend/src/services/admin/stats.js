@@ -23,6 +23,7 @@ export const getGlobalStats = async () => {
     WalletTransaction.countDocuments()
   ]);
 
+  // no need to show to the client the total cash balance of all users, so we can just sum the totalBalance field from the Portfolio collection
   const balanceAgg = await Portfolio.aggregate([
     { $group: { _id: null, totalCashBalance: { $sum: '$totalBalance' } } }
   ]);
@@ -45,13 +46,12 @@ export const getGlobalStats = async () => {
     if (item._id === 'FAILED') tradesByStatus.failed = item.count;
   });
 
-  const [xpAgg, surveyCount, totalBadges, totalQuests, earnedBadgesCount, questCompletions] = await Promise.all([
+  const [totalBadges, totalQuests] = await Promise.all([
     UserGamification.aggregate([
       { $group: { _id: null, totalXp: { $sum: '$xp' }, avgLevel: { $avg: '$level' } } }
     ]),
-    User.countDocuments({ surveyCompleted: true }),
+    
     Badge.countDocuments({ isActive: true }),
-    Quest.countDocuments({ isActive: true }),
     UserBadge.countDocuments(),
     UserQuest.countDocuments({ completed: true }),
   ]);
@@ -61,15 +61,9 @@ export const getGlobalStats = async () => {
     totalPortfolioValue: totalCashBalance,
     totalTrades: tradesByStatus,
     totalAssets,
-    totalTransactions,
     gamification: {
-      totalXp: xpAgg[0]?.totalXp || 0,
-      averageLevel: xpAgg[0] ? Math.round(xpAgg[0].avgLevel * 10) / 10 : 0,
-      surveyCompleted: surveyCount,
       totalBadges,
       totalQuests,
-      earnedBadgesCount,
-      questCompletions,
     }
   };
 };

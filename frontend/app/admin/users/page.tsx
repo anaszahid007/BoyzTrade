@@ -8,8 +8,6 @@ import {
   Search,
   Filter,
   Shield,
-  UserCheck,
-  UserX,
   Trash2,
   DollarSign,
   AlertTriangle,
@@ -25,9 +23,7 @@ import {
   Award,
   BarChart3,
   MessageSquare,
-  Calendar,
   TrendingUp,
-  TrendingDown,
   CheckCircle,
   Clock,
 } from "lucide-react";
@@ -80,6 +76,8 @@ function UserDetailsModal({
   const handleToggleRole = async () => {
     if (!data) return;
     if (userId === currentUser?._id) { setErrorMsg("Cannot change own role."); return; }
+    const isConfirm = confirm(`Are you sure you want to change the role of ${data.user.fullName} from ${data.user.role} to ${data.user.role === "admin" ? "user" : "admin"}?`);
+    if (!isConfirm) return;
     setTogglingRole(true);
     setErrorMsg("");
     try {
@@ -92,6 +90,8 @@ function UserDetailsModal({
 
   const handleToggleVerify = async () => {
     if (!data) return;
+    const isConfirm = confirm(`Are you sure you want to ${data.user.isVerified ? "unverify" : "verify"} ${data.user.fullName}'s email?`);
+    if(!isConfirm) return;
     setErrorMsg("");
     setTogglingVerify(true);
     try {

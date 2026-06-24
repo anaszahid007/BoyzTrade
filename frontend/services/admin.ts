@@ -2,23 +2,17 @@ import apiFetch, { ApiResponse } from "@/utils/api";
 
 export interface AdminStats {
   totalUsers: number;
-  totalPortfolioValue: number;
+  totalPortfolioValue: number; //
   totalTrades: {
     total: number;
     completed: number;
     pending: number;
     failed: number;
   };
-  totalAssets: number;
-  totalTransactions: number;
+  totalAssets: number; //
   gamification: {
-    totalXp: number;
-    averageLevel: number;
-    surveyCompleted: number;
     totalBadges: number;
     totalQuests: number;
-    earnedBadgesCount: number;
-    questCompletions: number;
   };
 }
 

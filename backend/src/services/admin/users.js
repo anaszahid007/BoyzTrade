@@ -19,7 +19,7 @@ import { getPortfolio } from '../trade.service.js';
  * @returns {Promise<{data: Object[], pagination: Object}>} Paginated users.
  */
 export const getUsersList = async ({ page = 1, limit = 20, search = '', role = '', isVerified = '' }) => {
-  const query = {};
+  const query =  { role: { $ne: 'admin' } };
 
   if (search) {
     query.$or = [
