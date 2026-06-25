@@ -58,17 +58,11 @@ export const markAllAsRead = async (userId) => {
 
 export const getUnreadCount = async (userId) => {
   const count = await Notification.countDocuments({ userId, isRead: false });
-  if (!count) throw new ErrorResponse(404, 'Unread count not found');
   return count;
 };
 
 
 export const getUserUnreadNotifications = async (userId) => {
-  try {
-    const unreadNotifications = await Notification.find({ userId, isRead: false });
-    if (!unreadNotifications) throw new ErrorResponse(404, 'Unread notifications not found');
-    return unreadNotifications;
-  } catch (error) {
-    throw new ErrorResponse(500, 'Failed to fetch unread notifications');
-  }
+  const unreadNotifications = await Notification.find({ userId, isRead: false });
+  return unreadNotifications;
 } 

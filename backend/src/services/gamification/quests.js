@@ -2,6 +2,7 @@ import Quest from '../../models/quest.model.js';
 import UserQuest from '../../models/userQuest.model.js';
 import { emitToUser } from '../../socket.js';
 import { awardXP } from './profile.js';
+import ErrorResponse from '../../utils/ErrorResponse.js';
 
 /** Creates UserQuest entries for all active daily/weekly quests if they don't already exist for the current period. */
 export const initializeQuests = async (userId) => {
@@ -120,9 +121,9 @@ export const updateQuestProgress = async (userId, type, increment = 1) => {
 /** Marks a completed quest as claimed and awards the XP reward to the user. */
 export const claimQuest = async (userId, userQuestId) => {
   const userQuest = await UserQuest.findOne({ _id: userQuestId, userId }).populate('questId');
-  if (!userQuest) throw new Error('Quest not found');
-  if (!userQuest.completed) throw new Error('Quest not completed');
-  if (userQuest.claimed) throw new Error('Quest already claimed');
+  if (!userQuest) throw new ErrorResponse(404, 'Quest not found');
+  if (!userQuest.completed) throw new ErrorResponse(400, 'Quest not completed');
+  if (userQuest.claimed) throw new ErrorResponse(400, 'Quest already claimed');
 
   userQuest.claimed = true;
   userQuest.claimedAt = new Date();

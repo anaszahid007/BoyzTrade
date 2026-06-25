@@ -36,4 +36,10 @@ export const updateSettingsSchema = z.object({
   }).optional(),
 });
 
-export default { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema, changePasswordSchema, updateSettingsSchema };
+export const surveySchema = z.object({
+  experienceLevel: z.string().optional(),
+  referralSource: z.string().optional(),
+  tradingGoals: z.string().optional(),
+});
+
+export default { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema, changePasswordSchema, updateSettingsSchema, surveySchema };
