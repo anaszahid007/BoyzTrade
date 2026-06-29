@@ -73,21 +73,6 @@ function UserDetailsModal({
     fetchDetails();
   }, [fetchDetails]);
 
-  const handleToggleRole = async () => {
-    if (!data) return;
-    if (userId === currentUser?._id) { setErrorMsg("Cannot change own role."); return; }
-    const isConfirm = confirm(`Are you sure you want to change the role of ${data.user.fullName} from ${data.user.role} to ${data.user.role === "admin" ? "user" : "admin"}?`);
-    if (!isConfirm) return;
-    setTogglingRole(true);
-    setErrorMsg("");
-    try {
-      await adminService.updateUserRole(userId, data.user.role === "admin" ? "user" : "admin");
-      await fetchDetails();
-      onUpdate();
-    } catch (err: any) { setErrorMsg(err.message); }
-    finally { setTogglingRole(false); }
-  };
-
   const handleToggleVerify = async () => {
     if (!data) return;
     const isConfirm = confirm(`Are you sure you want to ${data.user.isVerified ? "unverify" : "verify"} ${data.user.fullName}'s email?`);
@@ -188,18 +173,33 @@ function UserDetailsModal({
             <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Account Status</p>
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-muted-foreground">Role</span>
-              <button
-                onClick={handleToggleRole}
+              <select
+                value={u.role}
                 disabled={togglingRole || userId === currentUser?._id}
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold border transition-colors ${
+                onChange={e => {
+                  const newRole = e.target.value;
+                  if (newRole === u.role) return;
+                  const isConfirm = confirm(`Are you sure you want to change ${u.fullName}'s role from ${u.role} to ${newRole}?`);
+                  if (!isConfirm) return;
+                  setTogglingRole(true);
+                  setErrorMsg("");
+                  adminService.updateUserRole(userId, newRole)
+                    .then(() => { fetchDetails(); onUpdate(); })
+                    .catch((err: any) => setErrorMsg(err.message))
+                    .finally(() => setTogglingRole(false));
+                }}
+                className={`px-2 py-0.5 rounded-full text-[9px] font-bold border cursor-pointer appearance-none ${
                   u.role === "admin"
-                    ? "bg-success/10 border-success/20 text-success hover:bg-success/20"
-                    : "bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10"
-                } disabled:opacity-50`}
+                    ? "bg-success/10 border-success/20 text-success"
+                    : u.role === "instructor"
+                    ? "bg-primary/10 border-primary/20 text-primary"
+                    : "bg-white/5 border-white/10 text-muted-foreground"
+                } disabled:opacity-50 outline-none`}
               >
-                <Shield className="w-2.5 h-2.5" />
-                {u.role.toUpperCase()}
-              </button>
+                <option value="user" className="bg-[#0b0c10]">USER</option>
+                <option value="instructor" className="bg-[#0b0c10]">INSTRUCTOR</option>
+                <option value="admin" className="bg-[#0b0c10]">ADMIN</option>
+              </select>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-muted-foreground">Email Verified</span>
@@ -526,6 +526,7 @@ export default function UsersManagement() {
           >
             <option value="" className="bg-[#0b0c10]">All Roles</option>
             <option value="user" className="bg-[#0b0c10]">User Role</option>
+            <option value="instructor" className="bg-[#0b0c10]">Instructor Role</option>
             <option value="admin" className="bg-[#0b0c10]">Admin Role</option>
           </select>
           <Filter className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60 pointer-events-none" />
@@ -594,9 +595,11 @@ export default function UsersManagement() {
                       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                         item.role === "admin"
                           ? "bg-success/10 border-success/20 text-success"
+                          : item.role === "instructor"
+                          ? "bg-primary/10 border-primary/20 text-primary"
                           : "bg-white/5 border-white/10 text-muted-foreground"
                       }`}>
-                        <Shield className="w-2.5 h-2.5" />
+                        {item.role === "admin" ? <Shield className="w-2.5 h-2.5" /> : item.role === "instructor" ? <Shield className="w-2.5 h-2.5" /> : null}
                         {item.role.toUpperCase()}
                       </span>
                     </td>

@@ -18,7 +18,6 @@ import {
   Star,
   Wallet,
   CandlestickChart,
-  Sparkles,
   Target,
   BookOpen,
   Award,
@@ -182,7 +181,7 @@ function HeroSection() {
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg overflow-hidden border border-white/10">
-                    <img src="/images/logo.jpeg" alt="" className="w-full h-full object-cover" />
+                    <img src="/images/boyztrade-logo.jpg" alt="" className="w-full h-full object-cover" />
                   </div>
                   <span className="text-sm font-bold">Boyz<span className="text-success">Trade</span></span>
                 </div>

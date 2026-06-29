@@ -15,11 +15,8 @@ import {
   TrendingUp,
   AlertCircle,
   Database,
-  Terminal,
   Activity,
   Zap,
-  BarChart3,
-  ClipboardCheck,
   Award,
 } from "lucide-react";
 import Link from "next/link";

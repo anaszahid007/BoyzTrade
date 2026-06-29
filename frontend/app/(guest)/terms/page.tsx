@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { 
   FileText, Scale, AlertTriangle, CheckCircle, 
   Clock, Shield, UserCheck, Mail, ArrowLeft, 
-  BookOpen, DollarSign, Activity 
+  BookOpen, DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 

@@ -13,7 +13,7 @@ export const GuestFooter = () => {
           <div className="md:col-span-1 space-y-6">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 border border-white/10">
-                <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
+                <img src="/images/boyztrade-logo.jpg" alt="BoyzTrade" className="w-full h-full object-cover" />
               </div>
               <span className="text-xl font-bold tracking-tight">Boyz<span className="text-success">Trade</span></span>
             </div>
@@ -29,7 +29,7 @@ export const GuestFooter = () => {
               <li><Link href="/market" className="text-sm text-muted-foreground hover:text-success transition-colors">Market Prices</Link></li>
               <li><Link href="/dashboard/trade" className="text-sm text-muted-foreground hover:text-success transition-colors">Virtual Trading</Link></li>
               <li><Link href="/dashboard/portfolio" className="text-sm text-muted-foreground hover:text-success transition-colors">Portfolio Tracker</Link></li>
-              <li><Link href="/leaderboard" className="text-sm text-muted-foreground hover:text-success transition-colors">Leaderboard</Link></li>
+              <li><Link href="/dashboard/leaderboard" className="text-sm text-muted-foreground hover:text-success transition-colors">Leaderboard</Link></li>
             </ul>
           </div>
 
@@ -60,7 +60,7 @@ export const GuestFooter = () => {
         </div>
 
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-muted-foreground">
-          <p className="text-muted">&copy; 2026 Boyz Trade | All Rights Reserved</p>
+          <p className="text-muted-foreground">&copy; 2026 Boyz Trade | All Rights Reserved</p>
           <div className="flex items-center gap-6">
             <span>Made with <span className="text-success font-bold">Boyz Trade</span></span>
           </div>

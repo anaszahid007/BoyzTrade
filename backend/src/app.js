@@ -16,6 +16,8 @@ import notificationRoutes from './routes/notification.routes.js';
 import watchlistRoutes from './routes/watchlist.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import gamificationRoutes from './routes/gamification.routes.js';
+import learningRoutes from './routes/learning.routes.js';
+import uploadRoutes from './routes/upload.routes.js';
 
 // Config
 import env from './config/env.js';
@@ -56,6 +58,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/gamification', gamificationRoutes);
+app.use('/api/learning', learningRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use('/health', (req, res) => res.status(200).json({ success: true, message: 'Service is running' }));
 app.use((req, res) => res.status(404).json({ success: false, message: 'Not Found' }));
 

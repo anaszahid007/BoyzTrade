@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/Input";
@@ -9,7 +10,7 @@ import { motion } from "framer-motion";
 import { useAuthActions } from "@/hooks/useAuthActions";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const chartPath = "M0,80 C20,80 30,40 60,40 C90,40 100,60 130,60 C160,60 170,30 200,30 C230,30 240,50 270,50 C300,50 310,20 340,20 C370,20 380,35 400,35";
 
@@ -20,8 +21,10 @@ const stats = [
   { icon: Shield, value: "100%", label: "Risk-Free" },
 ];
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   const { user, loading } = useAuth();
   const { login: loginAction, authLoading, error } = useAuthActions();
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -29,9 +32,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user && user.isVerified) {
-      router.push(user.surveyCompleted ? "/dashboard" : "/auth/survey");
+      if (user.surveyCompleted) {
+        router.push(redirectTo || (user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard'));
+      } else {
+        router.push("/auth/survey");
+      }
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, redirectTo]);
 
   const onSubmit = async (data: any) => {
     await loginAction(data);
@@ -39,7 +46,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-bg-dark">
-      {/* Left - Form Panel */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12 relative overflow-hidden">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-success/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-primary/5 blur-[100px] rounded-full" />
@@ -49,17 +55,15 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md z-10"
         >
-          {/* Logo */}
           <div className="mb-10">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform">
-                <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
+                <img src="/images/boyztrade-logo.jpg" alt="BoyzTrade" className="w-full h-full object-cover" />
               </div>
               <span className="text-lg font-bold tracking-tight">Boyz<span className="text-success">Trade</span></span>
             </Link>
           </div>
 
-          {/* Heading */}
           <div className="mb-8">
             <h1 className="text-3xl lg:text-4xl font-bold tracking-tight mb-2">
               Welcome <span className="text-success">Back</span>
@@ -69,7 +73,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Form Card */}
           <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 sm:p-8 backdrop-blur-xl">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {(error || Object.keys(errors).length > 0) && (
@@ -136,7 +139,6 @@ export default function LoginPage() {
             </form>
           </div>
 
-          {/* Back to Home */}
           <div className="mt-6 text-center">
             <Link href="/" className="text-sm text-muted-foreground hover:text-success inline-flex items-center gap-2 transition-colors group">
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
@@ -146,9 +148,7 @@ export default function LoginPage() {
         </motion.div>
       </div>
 
-      {/* Right - Visual Panel */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-success/[0.08] via-transparent to-primary/[0.04] relative overflow-hidden items-center justify-center p-12">
-        {/* Background pattern */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-success/10 blur-[150px] rounded-full" />
           <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-primary/10 blur-[120px] rounded-full" />
@@ -160,7 +160,6 @@ export default function LoginPage() {
           animate={{ opacity: 1, x: 0 }}
           className="relative z-10 w-full max-w-lg space-y-12"
         >
-          {/* Badge + Heading */}
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-success/10 border border-success/20 rounded-full text-success text-[10px] font-bold uppercase tracking-wider">
               <Sparkles className="w-3 h-3" />
@@ -175,7 +174,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Animated Chart */}
           <div className="relative">
             <div className="absolute -inset-4 bg-success/5 blur-2xl rounded-3xl" />
             <div className="relative bg-card/60 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
@@ -213,7 +211,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-3">
             {stats.map((stat, i) => {
               const Icon = stat.icon;
@@ -237,7 +234,6 @@ export default function LoginPage() {
             })}
           </div>
 
-          {/* Trust indicators */}
           <div className="flex items-center gap-6 text-[10px] text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Shield className="w-3 h-3 text-success" />
@@ -255,5 +251,13 @@ export default function LoginPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-bg-dark" />}>
+      <LoginForm />
+    </Suspense>
   );
 }

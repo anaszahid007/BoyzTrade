@@ -8,7 +8,7 @@ import { Analytics } from '@vercel/analytics/next';
 export const metadata: Metadata = {
   title: "BoyzTrade",
   description: "Learn to trade crypto with $2500 in virtual funds. Real market data, zero risk.",
-  icons: [{ rel: "icon", url: "/images/logo.jpeg" }],
+  icons: [{ rel: "icon", url: "/images/boyztrade-logo.jpg" }],
 };
 
 export default function RootLayout({

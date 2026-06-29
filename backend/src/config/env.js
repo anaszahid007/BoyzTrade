@@ -21,6 +21,9 @@ const {
     REDIS_HOST,
     REDIS_PORT,
     REDIS_URL,
+    CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET,
 } = process.env;
 
 const isProd = NODE_ENV === 'production';
@@ -59,6 +62,12 @@ export default {
         host: REDIS_HOST || 'localhost',
         port: Number(REDIS_PORT) || 6379,
         url: REDIS_URL || `redis://${REDIS_HOST || 'localhost'}:${REDIS_PORT || 6379}`
+    },
+
+    cloudinary: {
+        cloudName: CLOUDINARY_CLOUD_NAME,
+        apiKey: CLOUDINARY_API_KEY,
+        apiSecret: CLOUDINARY_API_SECRET,
     },
 
     isProd,

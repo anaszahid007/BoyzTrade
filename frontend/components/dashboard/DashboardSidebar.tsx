@@ -13,6 +13,7 @@ import {
   Shield,
   Bell,
   Trophy,
+  GraduationCap,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthActions } from "@/hooks/useAuthActions";
@@ -31,6 +32,10 @@ const activityNavItems = [
 
 const communityNavItems = [
   { name: "Leaderboard", href: "/dashboard/leaderboard", icon: Trophy },
+];
+
+const educationNavItems = [
+  { name: "Learn", href: "/dashboard/learn", icon: GraduationCap },
 ];
 
 const secondaryNavItems = [
@@ -140,7 +145,7 @@ export default function DashboardSidebar({ isCollapsed, isSidebarOpen, onClose }
           <div className="flex items-center mb-8">
             <Link href="/dashboard" className={`flex items-center group transition-all ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
               <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-white/10 group-hover:scale-105 transition-transform duration-300">
-                <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
+                <img src="/images/boyztrade-logo.jpg" alt="BoyzTrade" className="w-full h-full object-cover" />
               </div>
               <div className={`flex flex-col overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
                 <span className="text-base font-bold tracking-tight leading-none whitespace-nowrap">Boyz<span className="text-primary">Trade</span></span>
@@ -167,6 +172,12 @@ export default function DashboardSidebar({ isCollapsed, isSidebarOpen, onClose }
             <nav className="space-y-0.5">
               <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Community</p>
               {renderGroup(communityNavItems)}
+            </nav>
+
+            {/* Education Section */}
+            <nav className="space-y-0.5">
+              <p className={`text-[8px] font-bold text-muted-foreground uppercase tracking-[0.2em] px-3 mb-2 overflow-hidden transition-all duration-300 ${isCollapsed ? 'h-0 opacity-0 mb-0' : 'opacity-40 h-auto'}`}>Education</p>
+              {renderGroup(educationNavItems)}
             </nav>
 
             {/* Configuration */}

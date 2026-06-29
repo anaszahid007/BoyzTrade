@@ -19,6 +19,8 @@ import {
   User as UserIcon,
   Award,
   Zap,
+  GraduationCap,
+  BookOpen,
 } from "lucide-react";
 import AdminProtectedRoute from "@/components/auth/AdminProtectedRoute";
 import { useAuthActions } from "@/hooks/useAuthActions";
@@ -35,6 +37,11 @@ const navItems = [
 const gamificationSubItems = [
   { name: "Badge Manager", href: "/admin/badges", icon: Award },
   { name: "Quest Manager", href: "/admin/quests", icon: Zap },
+];
+
+const learningSubItems = [
+  { name: "Instructors", href: "/admin/instructors", icon: GraduationCap },
+  { name: "Courses", href: "/admin/learning-courses", icon: BookOpen },
 ];
 
 const secondaryNavItems = [
@@ -56,6 +63,12 @@ export default function AdminLayout({
     }
     return false;
   });
+  const [learningOpen, setLearningOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("admin_learning_open") === "true";
+    }
+    return false;
+  });
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("admin_sidebar_collapsed");
@@ -64,6 +77,19 @@ export default function AdminLayout({
     return false;
   });
 
+  const allNavItems = [...navItems, ...gamificationSubItems, ...learningSubItems, ...secondaryNavItems];
+  const activeItem = allNavItems.find(item => 
+    pathname === item.href || (item.href !== "/admin" && item.href !== "/dashboard" && pathname?.startsWith(item.href))
+  );
+
+  const isGamificationActive = gamificationSubItems.some(
+    item => pathname === item.href || pathname?.startsWith(item.href)
+  );
+
+  const isLearningActive = learningSubItems.some(
+    item => pathname === item.href || pathname?.startsWith(item.href)
+  );
+
   useEffect(() => {
     localStorage.setItem("admin_sidebar_collapsed", String(isCollapsed));
   }, [isCollapsed]);
@@ -71,6 +97,14 @@ export default function AdminLayout({
   useEffect(() => {
     localStorage.setItem("admin_gamification_open", String(gamificationOpen));
   }, [gamificationOpen]);
+
+  useEffect(() => {
+    localStorage.setItem("admin_learning_open", String(learningOpen));
+  }, [learningOpen]);
+
+  useEffect(() => {
+    if (isLearningActive && !learningOpen) setLearningOpen(true);
+  }, [isLearningActive, learningOpen]);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -84,15 +118,6 @@ export default function AdminLayout({
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
-
-  const allNavItems = [...navItems, ...gamificationSubItems, ...secondaryNavItems];
-  const activeItem = allNavItems.find(item => 
-    pathname === item.href || (item.href !== "/admin" && item.href !== "/dashboard" && pathname?.startsWith(item.href))
-  );
-
-  const isGamificationActive = gamificationSubItems.some(
-    item => pathname === item.href || pathname?.startsWith(item.href)
-  );
 
   const renderNavItem = (item: { name: string; href: string; icon: React.ComponentType<{ className?: string }> }) => {
     const Icon = item.icon;
@@ -151,7 +176,7 @@ export default function AdminLayout({
             <div className="flex items-center mb-8">
               <Link href="/admin" className={`flex items-center group transition-all ${isCollapsed ? 'justify-center w-full gap-0' : 'gap-2.5'}`}>
                 <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-white/10 group-hover:scale-105 transition-transform duration-300">
-                  <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
+                  <img src="/images/boyztrade-logo.jpg" alt="BoyzTrade" className="w-full h-full object-cover" />
                 </div>
                 <div className={`flex flex-col overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0' : 'w-auto opacity-100'}`}>
                   <span className="text-base font-bold tracking-tight leading-none whitespace-nowrap">Boyz<span className="text-success">Admin</span></span>
@@ -205,6 +230,39 @@ export default function AdminLayout({
                     <div className={`overflow-hidden transition-all duration-300 ${gamificationOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"}`}>
                       <div className="ml-3 border-l border-white/5 pl-2 space-y-0.5 mt-0.5">
                         {gamificationSubItems.map((item) => renderNavItem(item))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Learning Management Dropdown */}
+                {isCollapsed ? (
+                  <div title="Learning" className="relative">
+                    <div className="group flex items-center justify-center w-full px-3 py-2 rounded-lg transition-all duration-300 text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent">
+                      <div className="flex items-center justify-center w-full gap-0">
+                        <div className="p-1 rounded-lg transition-all duration-300 bg-white/5 text-muted-foreground group-hover:text-foreground">
+                          <GraduationCap className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setLearningOpen(prev => !prev)}
+                      className={`group relative flex items-center justify-between w-full px-3 py-2 rounded-lg transition-all duration-300 ${isLearningActive ? "bg-success/15 text-success border border-success/20" : "text-muted-foreground hover:bg-white/5 hover:text-foreground border border-transparent"}`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`p-1 rounded-lg transition-all duration-300 ${isLearningActive ? "bg-success text-white" : "bg-white/5 text-muted-foreground group-hover:text-foreground"}`}>
+                          <GraduationCap className="w-3.5 h-3.5" />
+                        </div>
+                        <span className={`font-bold text-xs ${isLearningActive ? "translate-x-0.5" : ""}`}>Learning</span>
+                      </div>
+                      <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${learningOpen ? "rotate-0" : "-rotate-90"}`} />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-300 ${learningOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0"}`}>
+                      <div className="ml-3 border-l border-white/5 pl-2 space-y-0.5 mt-0.5">
+                        {learningSubItems.map((item) => renderNavItem(item))}
                       </div>
                     </div>
                   </>

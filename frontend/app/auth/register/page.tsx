@@ -50,7 +50,7 @@ export default function RegisterPage() {
           <div className="mb-10">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform">
-                <img src="/images/logo.jpeg" alt="BoyzTrade" className="w-full h-full object-cover" />
+                <img src="/images/boyztrade-logo.jpg" alt="BoyzTrade" className="w-full h-full object-cover" />
               </div>
               <span className="text-lg font-bold tracking-tight">Boyz<span className="text-success">Trade</span></span>
             </Link>

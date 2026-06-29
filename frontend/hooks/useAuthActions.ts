@@ -27,7 +27,8 @@ export function useAuthActions() {
     try {
       const user = await authService.login(data.email, data.password);
       setUser(user);
-      router.push(user.surveyCompleted ? "/dashboard" : "/auth/survey");
+      const home = user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard';
+      router.push(user.surveyCompleted ? home : "/auth/survey");
     } catch (err: any) {
       if (err.status === 403 && err.data?.requiresVerification) {
         // Redirect to verification page if email not verified
