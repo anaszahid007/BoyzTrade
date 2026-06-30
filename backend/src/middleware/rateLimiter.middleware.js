@@ -1,10 +1,10 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 const message = { success: false, message: 'Too many requests, please try again after 15 minutes' };
 
 const keyGenerator = (req) => {
   const ua = req.headers['user-agent'] || 'unknown';
-  return `${req.ip}:${ua}`;
+  return `${ipKeyGenerator(req)}:${ua}`;
 };
 
 export const authLimiter = rateLimit({
