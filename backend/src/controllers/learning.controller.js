@@ -78,13 +78,15 @@ export const getLesson = asyncHandler(async (req, res) => {
 
 export const createLesson = asyncHandler(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
-  const data = await learningService.createLesson(req.params.courseId, req.body, req.user._id, isAdmin);
+  const videoFile = req.files?.video?.[0];
+  const data = await learningService.createLesson(req.params.courseId, req.body, req.user._id, isAdmin, videoFile);
   return Response.success(res, data, 'Lesson created', 201);
 });
 
 export const updateLesson = asyncHandler(async (req, res) => {
   const isAdmin = req.user.role === 'admin';
-  const data = await learningService.updateLesson(req.params.lessonId, req.body, req.user._id, isAdmin);
+  const videoFile = req.files?.video?.[0];
+  const data = await learningService.updateLesson(req.params.lessonId, req.body, req.user._id, isAdmin, videoFile);
   return Response.success(res, data, 'Lesson updated');
 });
 

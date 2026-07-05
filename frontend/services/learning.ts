@@ -21,6 +21,7 @@ export interface Lesson {
   description: string;
   course: string;
   videoUrl: string;
+  videoPublicId?: string;
   content: string;
   attachments: { name: string; url: string; publicId: string; type: string }[];
   order: number;
@@ -100,6 +101,12 @@ export const learningService = {
   },
   async updateLesson(lessonId: string, data: Partial<Lesson>): Promise<ApiResponse<Lesson>> {
     return apiFetch(`/api/learning/instructor/lessons/${lessonId}`, { method: 'PATCH', data });
+  },
+  async createLessonWithVideo(courseId: string, formData: FormData): Promise<ApiResponse<Lesson>> {
+    return apiUpload(`/api/learning/instructor/courses/${courseId}/lessons`, formData, { method: 'POST' });
+  },
+  async updateLessonWithVideo(lessonId: string, formData: FormData): Promise<ApiResponse<Lesson>> {
+    return apiUpload(`/api/learning/instructor/lessons/${lessonId}`, formData, { method: 'PATCH' });
   },
   async deleteLesson(lessonId: string): Promise<ApiResponse<any>> {
     return apiFetch(`/api/learning/instructor/lessons/${lessonId}`, { method: 'DELETE' });

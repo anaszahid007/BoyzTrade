@@ -1,6 +1,7 @@
 import Course from '../../models/course.model.js';
 import Lesson from '../../models/lesson.model.js';
 import Enrollment from '../../models/enrollment.model.js';
+import { deleteVideo, extractPublicId, deleteImage } from '../../services/cloudinary.service.js';
 import ErrorResponse from '../../utils/ErrorResponse.js';
 
 const checkOwnership = async (courseId, userId) => {
@@ -119,6 +120,18 @@ export const update = async (courseId, data, userId, isAdmin) => {
     const lessonCount = await Lesson.countDocuments({ course: courseId });
     if (lessonCount === 0) throw new ErrorResponse(400, 'Cannot publish a course with no lessons');
   }
+
+  if (data.coverImage) {
+    const oldCourse = await Course.findById(courseId).select('coverImage').lean();
+    if (oldCourse?.coverImage) {
+      const oldPublicId = oldCourse.coverImage.publicId || extractPublicId(oldCourse.coverImage.url);
+      const newPublicId = data.coverImage.publicId || extractPublicId(data.coverImage.url);
+      if (oldPublicId && oldPublicId !== newPublicId) {
+        await deleteImage(oldPublicId);
+      }
+    }
+  }
+
   const course = await Course.findByIdAndUpdate(courseId, data, { new: true, runValidators: true });
   if (!course) throw new ErrorResponse(404, 'Course not found');
   return course;
@@ -129,9 +142,24 @@ export const remove = async (courseId, userId, isAdmin) => {
   const enrollmentCount = await Enrollment.countDocuments({ course: courseId });
   if (enrollmentCount > 0) throw new ErrorResponse(400, 'Cannot delete course with active enrollments');
 
+  const lessons = await Lesson.find({ course: courseId }).select('videoPublicId videoUrl').lean();
+  for (const lesson of lessons) {
+    const publicId = lesson.videoPublicId || extractPublicId(lesson.videoUrl);
+    if (publicId) {
+      const type = lesson.videoPublicId ? 'authenticated' : 'upload';
+      await deleteVideo(publicId, { type });
+    }
+  }
+
+
   await Lesson.deleteMany({ course: courseId });
+  
   const course = await Course.findByIdAndDelete(courseId);
   if (!course) throw new ErrorResponse(404, 'Course not found');
+  
+  const coursePublicId = course.coverImage?.publicId || extractPublicId(course.coverImage?.url);
+  if (coursePublicId) await deleteImage(coursePublicId);
+
   return course;
 };
 

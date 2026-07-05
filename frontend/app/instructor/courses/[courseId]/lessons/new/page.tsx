@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, Video, FileText, Plus, X, Upload, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Video, FileText, Plus, X, Upload } from "lucide-react";
 import { learningService } from "@/services/learning";
 import MarkdownEditor from "@/components/ui/MarkdownEditor";
 
@@ -14,17 +14,13 @@ export default function NewLessonPage() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [videoUrl, setVideoUrl] = useState('');
-  const [videoPublicId, setVideoPublicId] = useState('');
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [duration, setDuration] = useState('');
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [attachments, setAttachments] = useState<{ name: string; url: string }[]>([]);
   const [newAttachName, setNewAttachName] = useState('');
   const [newAttachUrl, setNewAttachUrl] = useState('');
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const handleAddAttachment = () => {
@@ -38,35 +34,20 @@ export default function NewLessonPage() {
     setAttachments(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const handleUploadVideo = async (file: File) => {
-    if (!file.type.startsWith('video/')) { setError('Please select a video file'); return; }
-    if (file.size > 200 * 1024 * 1024) { setError('Video must be under 200MB'); return; }
-    setUploading(true);
-    setError('');
-    try {
-      const res = await learningService.uploadVideo(file);
-      if (res.data) {
-        setVideoUrl(res.data.url);
-        setVideoPublicId(res.data.publicId);
-        if (res.data.duration) setDuration(String(res.data.duration));
-      }
-      if (res.data?.previewUrl) setPreviewUrl(res.data.previewUrl);
-    } catch (err: any) {
-      setError(err.message || 'Upload failed');
-    }
-    setUploading(false);
-  };
-
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) handleUploadVideo(file);
+    if (file) setVideoFile(file);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) handleUploadVideo(file);
+    if (file) setVideoFile(file);
+  };
+
+  const handleRemoveVideo = () => {
+    setVideoFile(null);
   };
 
   const handleSave = async () => {
@@ -74,8 +55,12 @@ export default function NewLessonPage() {
     setSaving(true);
     setError('');
     try {
-      const payload: any = { title: title.trim(), content, videoUrl, videoPublicId, duration: Number(duration) || 0, attachments };
-      const res = await learningService.createLesson(courseId, payload);
+      const formData = new FormData();
+      const payload: any = { title: title.trim(), content, attachments };
+      formData.append('data', JSON.stringify(payload));
+      if (videoFile) formData.append('video', videoFile);
+
+      const res = await learningService.createLessonWithVideo(courseId, formData);
       if (res.data?._id) {
         router.push(`/instructor/courses/${courseId}/lessons/${res.data._id}`);
       } else {
@@ -138,7 +123,7 @@ export default function NewLessonPage() {
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
             onClick={() => (document.getElementById('video-upload-input') as HTMLInputElement)?.click()}
-            className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all mb-3 ${dragOver ? 'border-success bg-success/5' : videoUrl ? 'border-white/10 bg-white/[0.02]' : 'border-white/10 hover:border-success/50 hover:bg-white/[0.02]'}`}
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all mb-3 ${dragOver ? 'border-success bg-success/5' : videoFile ? 'border-white/10 bg-white/[0.02]' : 'border-white/10 hover:border-success/50 hover:bg-white/[0.02]'}`}
           >
             <input
               id="video-upload-input"
@@ -148,24 +133,16 @@ export default function NewLessonPage() {
               onChange={handleFileSelect}
             />
 
-            {uploading ? (
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-8 h-8 text-success animate-spin" />
-                <p className="text-sm font-bold text-foreground">Uploading...</p>
-                <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-success rounded-full animate-pulse" style={{ width: '60%' }} />
-                </div>
-              </div>
-            ) : videoUrl ? (
+            {videoFile ? (
               <div className="flex flex-col items-center gap-2">
                 <Video className="w-8 h-8 text-success" />
-                <p className="text-sm font-bold text-foreground">Video uploaded</p>
-                <p className="text-[10px] text-muted-foreground truncate max-w-full">{videoUrl}</p>
+                <p className="text-sm font-bold text-foreground">{videoFile.name}</p>
+                <p className="text-[10px] text-muted-foreground">{(videoFile.size / (1024 * 1024)).toFixed(1)} MB</p>
                 <button
-                  onClick={e => { e.stopPropagation(); setVideoUrl(''); }}
+                  onClick={e => { e.stopPropagation(); handleRemoveVideo(); }}
                   className="text-[10px] text-danger font-bold hover:underline mt-1"
                 >
-                  Remove & re-upload
+                  Remove & select different
                 </button>
               </div>
             ) : (
@@ -175,31 +152,6 @@ export default function NewLessonPage() {
                 <p className="text-[10px] text-muted-foreground">MP4, MOV, WebM, AVI up to 200MB</p>
               </div>
             )}
-          </div>
-
-          {/* Preview */}
-          {videoUrl && previewUrl && (
-            <div className="aspect-video bg-black rounded-xl overflow-hidden mb-3 border border-white/5">
-              <iframe src={previewUrl} className="w-full h-full" allowFullScreen allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
-            </div>
-          )}
-
-          {/* Manual URL fallback */}
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={videoUrl}
-              onChange={e => setVideoUrl(e.target.value)}
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-success/50"
-              placeholder="Or paste a video URL manually..."
-            />
-            <input
-              type="text"
-              value={duration}
-              onChange={e => setDuration(e.target.value)}
-              className="w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-success/50"
-              placeholder="Duration"
-            />
           </div>
         </div>
 

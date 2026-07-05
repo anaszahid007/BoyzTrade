@@ -1,7 +1,7 @@
 import Lesson from '../../models/lesson.model.js';
 import Course from '../../models/course.model.js';
 import Enrollment from '../../models/enrollment.model.js';
-import cloudinary from '../../config/cloudinary.js';
+import { uploadVideo, deleteVideo, getSignedUrl, extractPublicId } from '../../services/cloudinary.service.js';
 import ErrorResponse from '../../utils/ErrorResponse.js';
 
 const verifyCourseAccess = async (courseId, userId, isAdmin) => {
@@ -20,17 +20,40 @@ export const getById = async (lessonId, userId, isAdmin) => {
   return lesson;
 };
 
-export const create = async (courseId, data, userId, isAdmin) => {
+export const create = async (courseId, data, userId, isAdmin, file = null) => {
   await verifyCourseAccess(courseId, userId, isAdmin);
+
+  const lessonData = { ...data };
+  if (file) {
+    const result = await uploadVideo(file.buffer);
+    lessonData.videoUrl = result.secure_url;
+    lessonData.videoPublicId = result.public_id;
+    if (!lessonData.duration) lessonData.duration = Math.round(result.duration || 0);
+  }
+
   const maxOrder = await Lesson.findOne({ course: courseId }).sort({ order: -1 }).select('order').lean();
-  return Lesson.create({ ...data, course: courseId, order: (maxOrder?.order ?? -1) + 1 });
+  return Lesson.create({ ...lessonData, course: courseId, order: (maxOrder?.order ?? -1) + 1 });
 };
 
-export const update = async (lessonId, data, userId, isAdmin) => {
+export const update = async (lessonId, data, userId, isAdmin, file = null) => {
   const lesson = await Lesson.findById(lessonId);
   if (!lesson) throw new ErrorResponse(404, 'Lesson not found');
   await verifyCourseAccess(lesson.course, userId, isAdmin);
-  const updated = await Lesson.findByIdAndUpdate(lessonId, data, { new: true, runValidators: true });
+
+  const updateData = { ...data };
+  if (file) {
+    const oldPublicId = lesson.videoPublicId || extractPublicId(lesson.videoUrl);
+    if (oldPublicId) {
+      const type = lesson.videoPublicId ? 'authenticated' : 'upload';
+      await deleteVideo(oldPublicId, { type });
+    }
+    const result = await uploadVideo(file.buffer);
+    updateData.videoUrl = result.secure_url;
+    updateData.videoPublicId = result.public_id;
+    if (!updateData.duration) updateData.duration = Math.round(result.duration || 0);
+  }
+
+  const updated = await Lesson.findByIdAndUpdate(lessonId, updateData, { new: true, runValidators: true });
   return updated;
 };
 
@@ -38,6 +61,16 @@ export const remove = async (lessonId, userId, isAdmin) => {
   const lesson = await Lesson.findById(lessonId);
   if (!lesson) throw new ErrorResponse(404, 'Lesson not found');
   await verifyCourseAccess(lesson.course, userId, isAdmin);
+
+  const publicId = lesson.videoPublicId || extractPublicId(lesson.videoUrl);
+  if (publicId) {
+    const type = lesson.videoPublicId ? 'authenticated' : 'upload';
+    const check = await deleteVideo(publicId, { type });
+    if (check.result !== 'ok' && check.result !== 'not found') {
+      console.error('Cloudinary deletion error:', check);
+    }
+  }
+
   await Lesson.findByIdAndDelete(lessonId);
   return lesson;
 };
@@ -50,18 +83,6 @@ export const reorder = async (courseId, items, userId, isAdmin) => {
   await Lesson.bulkWrite(ops);
   return Lesson.find({ course: courseId }).sort({ order: 1 }).lean();
 };
-
-function extractPublicId(videoUrl) {
-  try {
-    const url = new URL(videoUrl);
-    const pathParts = url.pathname.split('/');
-    const versionIdx = pathParts.findIndex(p => /^v\d+$/.test(p));
-    if (versionIdx === -1) return null;
-    return pathParts.slice(versionIdx + 1).join('/').replace(/\.[^.]+$/, '');
-  } catch {
-    return null;
-  }
-}
 
 export const streamVideo = async (lessonId, userId) => {
   const lesson = await Lesson.findById(lessonId).populate('course');
@@ -78,12 +99,7 @@ export const streamVideo = async (lessonId, userId) => {
 
   const type = lesson.videoPublicId ? 'authenticated' : 'upload';
   const expiresAt = Math.floor(Date.now() / 1000) + 3600;
-  const url = cloudinary.url(publicId, {
-    resource_type: 'video',
-    type,
-    sign_url: true,
-    expires_at: expiresAt,
-  });
+  const url = getSignedUrl(publicId, { type, expiresAt });
 
   return { url, expiresAt };
 };

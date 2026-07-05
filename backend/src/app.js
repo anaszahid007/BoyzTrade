@@ -32,8 +32,9 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "https://s3.tradingview.com"],
-      imgSrc: ["'self'", "data:", "https://assets.coingecko.com", "https://coin-images.coingecko.com"],
+      imgSrc: ["'self'", "data:", "https://assets.coingecko.com", "https://coin-images.coingecko.com", "https://res.cloudinary.com"],
       connectSrc: ["'self'", env.clientUrl],
+      mediaSrc: ["'self'", "https://res.cloudinary.com"],
       frameSrc: ["'self'", "https://s3.tradingview.com"],
     },
   },

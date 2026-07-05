@@ -172,7 +172,7 @@ export default function PublicCourseDetailPage() {
                       <span className="font-bold text-sm">Enrolled</span>
                     </div>
                     <Link
-                      href={`/learn/courses/${courseId}`}
+                      href={`/dashboard/learn/courses/${courseId}`}
                       className="block w-full py-3 bg-success text-white font-bold text-sm rounded-xl hover:bg-success/90 transition-colors text-center"
                     >
                       Start Learning

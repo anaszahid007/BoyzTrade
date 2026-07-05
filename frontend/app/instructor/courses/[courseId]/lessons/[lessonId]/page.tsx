@@ -20,17 +20,14 @@ export default function LessonEditorPage() {
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [videoUrl, setVideoUrl] = useState('');
-  const [videoPublicId, setVideoPublicId] = useState('');
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState('');
-  const [duration, setDuration] = useState('');
   const [attachments, setAttachments] = useState<{ name: string; url: string }[]>([]);
   const [newAttachName, setNewAttachName] = useState('');
   const [newAttachUrl, setNewAttachUrl] = useState('');
 
-  // Upload state
-  const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [streamLoading, setStreamLoading] = useState(false);
 
   useEffect(() => {
     if (!lessonId) return;
@@ -41,14 +38,12 @@ export default function LessonEditorPage() {
           setLesson(l);
           setTitle(l.title);
           setContent(l.content || '');
-          setVideoUrl(l.videoUrl || '');
-          setVideoPublicId((l as any).videoPublicId || '');
-          setDuration(String(l.duration || ''));
           setAttachments(l.attachments || []);
           if (l.videoUrl) {
+            setStreamLoading(true);
             learningService.getVideoStream(lessonId).then(r => {
               if (r.data?.url) setPreviewUrl(r.data.url);
-            }).catch(() => {});
+            }).catch(() => {}).finally(() => setStreamLoading(false));
           }
         }
       })
@@ -67,35 +62,21 @@ export default function LessonEditorPage() {
     setAttachments(prev => prev.filter((_, i) => i !== idx));
   };
 
-  const handleUploadVideo = async (file: File) => {
-    if (!file.type.startsWith('video/')) { setError('Please select a video file'); return; }
-    if (file.size > 200 * 1024 * 1024) { setError('Video must be under 200MB'); return; }
-    setUploading(true);
-    setError('');
-    try {
-      const res = await learningService.uploadVideo(file);
-      if (res.data) {
-        setVideoUrl(res.data.url);
-        setVideoPublicId(res.data.publicId);
-        if (res.data.duration) setDuration(String(res.data.duration));
-      }
-      if (res.data?.previewUrl) setPreviewUrl(res.data.previewUrl);
-    } catch (err: any) {
-      setError(err.message || 'Upload failed');
-    }
-    setUploading(false);
-  };
-
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) handleUploadVideo(file);
+    if (file) setVideoFile(file);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) handleUploadVideo(file);
+    if (file) setVideoFile(file);
+  };
+
+  const handleRemoveVideo = () => {
+    setVideoFile(null);
+    setPreviewUrl('');
   };
 
   const handleSave = async () => {
@@ -103,8 +84,12 @@ export default function LessonEditorPage() {
     setSaving(true);
     setError('');
     try {
-      const payload: any = { title: title.trim(), content, videoUrl, videoPublicId, duration: Number(duration) || 0, attachments };
-      await learningService.updateLesson(lessonId, payload);
+      const formData = new FormData();
+      const payload: any = { title: title.trim(), content, attachments };
+      formData.append('data', JSON.stringify(payload));
+      if (videoFile) formData.append('video', videoFile);
+
+      await learningService.updateLessonWithVideo(lessonId, formData);
       router.push(`/instructor/courses/${courseId}`);
     } catch (err: any) {
       setError(err.message || 'Failed to save lesson');
@@ -173,7 +158,7 @@ export default function LessonEditorPage() {
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
             onClick={() => (document.getElementById('video-upload-input') as HTMLInputElement)?.click()}
-            className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all mb-3 ${dragOver ? 'border-success bg-success/5' : videoUrl ? 'border-white/10 bg-white/[0.02]' : 'border-white/10 hover:border-success/50 hover:bg-white/[0.02]'}`}
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all mb-3 ${dragOver ? 'border-success bg-success/5' : videoFile ? 'border-white/10 bg-white/[0.02]' : 'border-white/10 hover:border-success/50 hover:bg-white/[0.02]'}`}
           >
             <input
               id="video-upload-input"
@@ -183,20 +168,24 @@ export default function LessonEditorPage() {
               onChange={handleFileSelect}
             />
 
-            {uploading ? (
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-8 h-8 text-success animate-spin" />
-                <p className="text-sm font-bold text-foreground">Uploading...</p>
-                <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-success rounded-full animate-pulse" style={{ width: '60%' }} />
-                </div>
-              </div>
-            ) : videoUrl ? (
+            {videoFile ? (
               <div className="flex flex-col items-center gap-2">
                 <Video className="w-8 h-8 text-success" />
-                <p className="text-sm font-bold text-foreground">Video uploaded</p>
+                <p className="text-sm font-bold text-foreground">{videoFile.name}</p>
+                <p className="text-[10px] text-muted-foreground">{(videoFile.size / (1024 * 1024)).toFixed(1)} MB</p>
                 <button
-                  onClick={e => { e.stopPropagation(); setVideoUrl(''); }}
+                  onClick={e => { e.stopPropagation(); handleRemoveVideo(); }}
+                  className="text-[10px] text-danger font-bold hover:underline mt-1"
+                >
+                  Remove & select different
+                </button>
+              </div>
+            ) : previewUrl ? (
+              <div className="flex flex-col items-center gap-2">
+                <Video className="w-8 h-8 text-success" />
+                <p className="text-sm font-bold text-foreground">Current video</p>
+                <button
+                  onClick={e => { e.stopPropagation(); handleRemoveVideo(); }}
                   className="text-[10px] text-danger font-bold hover:underline mt-1"
                 >
                   Remove & Replace
@@ -205,42 +194,31 @@ export default function LessonEditorPage() {
             ) : (
               <div className="flex flex-col items-center gap-2">
                 <Upload className="w-8 h-8 text-muted-foreground" />
-                <p className="text-sm font-bold text-foreground">Drop a video here or click to browse</p>
+                <p className="text-sm font-bold text-foreground">Drop a new video here or click to browse</p>
                 <p className="text-[10px] text-muted-foreground">MP4, MOV, WebM, AVI up to 200MB</p>
               </div>
             )}
           </div>
 
           {/* Preview */}
-          {videoUrl && previewUrl && (
+          {previewUrl && !videoFile && (
             <div className="aspect-video w-full rounded-xl border-1 border-neutral-800 overflow-hidden mb-8">
-            <video
-              src={previewUrl}
-              controls
-              controlsList="nodownload"
-              onContextMenu={(e) => e.preventDefault()}
-              className="w-full h-full object-cover"
-            />
+            {streamLoading ? (
+              <div className="w-full h-full flex items-center justify-center bg-black">
+                <Loader2 className="w-8 h-8 text-success animate-spin" />
+              </div>
+            ) : (
+              <video
+                src={previewUrl}
+                controls
+                controlsList="nodownload"
+                onContextMenu={(e) => e.preventDefault()}
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
           )}
 
-          {/* Manual URL fallback */}
-          {/* <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={videoUrl}
-              onChange={e => setVideoUrl(e.target.value)}
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-success/50"
-              placeholder="Or paste a video URL manually..."
-            />
-            <input
-              type="text"
-              value={duration}
-              onChange={e => setDuration(e.target.value)}
-              className="w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-success/50"
-              placeholder="Duration"
-            />
-          </div> */}
         </div>
 
         <div>

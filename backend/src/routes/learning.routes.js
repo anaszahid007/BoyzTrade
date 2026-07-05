@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { protect, requireRole } from '../middleware/auth.middleware.js';
+import { uploadLessonVideo } from '../middleware/upload.middleware.js';
+import parseFormData from '../middleware/parseFormData.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import {
   createCourseSchema,
@@ -35,8 +37,8 @@ instructor.patch('/courses/:courseId', validate(updateCourseSchema), ctrl.update
 instructor.delete('/courses/:courseId', ctrl.deleteCourse);
 
 instructor.get('/lessons/:lessonId', ctrl.getLesson);
-instructor.post('/courses/:courseId/lessons', validate(createLessonSchema), ctrl.createLesson);
-instructor.patch('/lessons/:lessonId', validate(updateLessonSchema), ctrl.updateLesson);
+instructor.post('/courses/:courseId/lessons', uploadLessonVideo, parseFormData, validate(createLessonSchema), ctrl.createLesson);
+instructor.patch('/lessons/:lessonId', uploadLessonVideo, parseFormData, validate(updateLessonSchema), ctrl.updateLesson);
 instructor.delete('/lessons/:lessonId', ctrl.deleteLesson);
 instructor.patch('/courses/:courseId/lessons/reorder', validate(reorderSchema), ctrl.reorderLessons);
 

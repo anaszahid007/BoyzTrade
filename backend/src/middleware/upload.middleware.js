@@ -45,3 +45,12 @@ export const uploadCover = multer({
   fileFilter: imageFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
 }).single('cover');
+
+export const uploadLessonVideo = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 200 * 1024 * 1024 },
+}).fields([
+  { name: 'data', maxCount: 1 },
+  { name: 'video', maxCount: 1 },
+]);
