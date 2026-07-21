@@ -5,6 +5,9 @@ import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
+// Database connection
+import connectDb from './config/db.js';
+
 // Middleware
 import errorHandler from './middleware/error.middleware.js';
 
@@ -23,6 +26,15 @@ import env from './config/env.js';
 
 const app = express();
 
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).send('Database connection error');
+  }
+});
+
 app.set('trust proxy', 1);
 
 app.use(helmet({
@@ -38,10 +50,12 @@ app.use(helmet({
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
   frameguard: { action: 'deny' },
 }));
+
 app.use(cors({ 
 	origin: env.clientUrl,
 	credentials: true 
 }));
+
 app.use(morgan('combined'));
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
