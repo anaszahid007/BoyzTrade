@@ -22,7 +22,6 @@ const connectDb = async () => {
         // Start real-time broadcasting
         startPriceBroadcast();
 
-        httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}\nhttp://localhost:${PORT}`));
     } catch (err) {
         console.error('MongoDB connection error:', error);
         process.exit(1);
