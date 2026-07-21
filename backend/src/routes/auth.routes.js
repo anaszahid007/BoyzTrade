@@ -13,11 +13,13 @@ import {
     resetPasswordSchema,
     updateProfileSchema,
     changePasswordSchema,
-    updateSettingsSchema
+    updateSettingsSchema,
+    surveySchema
 } from '../validators/auth.validator.js';
 
 // Controllers
-import * as controller from '../controllers/auth.controller.js';
+import * as authController from '../controllers/auth.controller.js';
+import * as profileController from '../controllers/profile.controller.js';
 
 
 const router = Router();
@@ -28,7 +30,7 @@ const router = Router();
  * @access Public
  * @input { email, fullName, password }
 */
-router.post('/register', authLimiter, validate(registerSchema), controller.register);
+router.post('/register', authLimiter, validate(registerSchema), authController.register);
 
 /**
  * @route POST /api/auth/login
@@ -36,21 +38,21 @@ router.post('/register', authLimiter, validate(registerSchema), controller.regis
  * @access Public
  * @input { email, password }
  */
-router.post('/login', authLimiter, validate(loginSchema), controller.login);
+router.post('/login', authLimiter, validate(loginSchema), authController.login);
 
 /**
  * @route POST /api/auth/logout
  * @desc Logout user by revoking refresh token
  * @access Public (client needs to send refresh token)
 */
-router.post('/logout', authLimiter, controller.logout);
+router.post('/logout', authLimiter, authController.logout);
 
 /**
  * @route POST /api/auth/refresh
  * @desc Refresh user's access token
  * @access Public (client needs to send refresh token)
 */
-router.post('/refresh', authLimiter, controller.refresh);
+router.post('/refresh', authLimiter, authController.refresh);
 
 /**
  * @route GET /api/auth/verify-email
@@ -58,14 +60,14 @@ router.post('/refresh', authLimiter, controller.refresh);
  * @access Public
  * @query { token, next }
  */
-router.get('/verify-email', authLimiter, controller.verifyEmail);
+router.get('/verify-email', authLimiter, authController.verifyEmail);
 
 /**
  * @route POST /api/auth/resend-verification
  * @desc Resend verification email
  * @access Public
  */
-router.post('/resend-verification', authLimiter, controller.resendVerification);
+router.post('/resend-verification', authLimiter, authController.resendVerification);
 
 /**
  * @route POST /api/auth/forgot-password
@@ -73,7 +75,7 @@ router.post('/resend-verification', authLimiter, controller.resendVerification);
  * @access Public
  * @input { email }
  */
-router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), controller.forgotPassword);
+router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
 
 /**
  * @route POST /api/auth/reset-password
@@ -81,41 +83,41 @@ router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), con
  * @access Public
  * @input { token, password }
  */
-router.post('/reset-password', authLimiter, validate(resetPasswordSchema), controller.resetPassword);
+router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
 
 /**
  * @route GET /api/auth/me
  * @desc Get current user's profile
  * @access Private
  */
-router.get('/me', protect, apiLimiter, controller.me);
+router.get('/me', protect, apiLimiter, profileController.me);
 
 /**
  * @route PATCH /api/auth/profile
  * @desc Update user profile (fullName)
  * @access Private
  */
-router.patch('/profile', protect, apiLimiter, validate(updateProfileSchema), controller.updateProfile);
+router.patch('/profile', protect, apiLimiter, validate(updateProfileSchema), profileController.updateProfile);
 
 /**
  * @route PATCH /api/auth/password
  * @desc Change password while logged in
  * @access Private
  */
-router.patch('/password', protect, apiLimiter, validate(changePasswordSchema), controller.changePassword);
+router.patch('/password', protect, apiLimiter, validate(changePasswordSchema), profileController.changePassword);
 
 /**
  * @route PATCH /api/auth/settings
  * @desc Update user settings
  * @access Private
  */
-router.patch('/settings', protect, apiLimiter, validate(updateSettingsSchema), controller.updateSettings);
+router.patch('/settings', protect, apiLimiter, validate(updateSettingsSchema), profileController.updateSettings);
 
 /**
  * @route PATCH /api/auth/survey
  * @desc Submit onboarding survey
  * @access Private
  */
-router.patch('/survey', protect, apiLimiter, controller.submitSurvey);
+router.patch('/survey', protect, apiLimiter, validate(surveySchema), profileController.submitSurvey);
 
 export default router;

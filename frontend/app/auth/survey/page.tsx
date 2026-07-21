@@ -45,7 +45,8 @@ export default function SurveyPage() {
     if (!loading && !user) {
       router.push("/auth/login");
     } else if (!loading && user && user.surveyCompleted) {
-      router.push("/dashboard");
+      const home = user.role === 'admin' ? '/admin' : user.role === 'instructor' ? '/instructor' : '/dashboard';
+      router.push(home);
     }
   }, [user, loading, router]);
 

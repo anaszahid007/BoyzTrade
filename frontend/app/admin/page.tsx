@@ -15,11 +15,8 @@ import {
   TrendingUp,
   AlertCircle,
   Database,
-  Terminal,
   Activity,
   Zap,
-  BarChart3,
-  ClipboardCheck,
   Award,
 } from "lucide-react";
 import Link from "next/link";
@@ -162,9 +159,9 @@ export default function AdminDashboard() {
           <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Global Trades Logged</p>
           <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats?.totalTrades.total.toLocaleString()}</h2>
           <div className="flex items-center justify-between mt-3 text-[8px] text-muted-foreground font-mono">
-            <span className="text-success font-bold">C: {stats?.totalTrades.completed}</span>
-            <span className="text-warning font-bold">P: {stats?.totalTrades.pending}</span>
-            <span className="text-success font-bold">F: {stats?.totalTrades.failed}</span>
+            <span className="text-success font-bold">Completed: {stats?.totalTrades.completed}</span>
+            <span className="text-warning font-bold">Pending: {stats?.totalTrades.pending}</span>
+            <span className="text-danger font-bold">Failed: {stats?.totalTrades.failed}</span>
           </div>
         </div>
 
@@ -182,84 +179,10 @@ export default function AdminDashboard() {
         </div>
       </motion.div>
 
-      {/* Gamification Stats Row */}
-      {stats?.gamification && (
-        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <Zap className="w-16 h-16 text-warning" />
-            </div>
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Total XP Earned</p>
-            <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats.gamification.totalXp.toLocaleString()}</h2>
-            <div className="flex items-center gap-1 mt-3 text-[9px] text-warning font-bold">
-              <Zap className="w-3 h-3" />
-              <span>Across All Users</span>
-            </div>
-          </div>
-
-          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <BarChart3 className="w-16 h-16 text-primary" />
-            </div>
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Average Level</p>
-            <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats.gamification.averageLevel}</h2>
-            <div className="flex items-center gap-1 mt-3 text-[9px] text-primary font-bold">
-              <BarChart3 className="w-3 h-3" />
-              <span>User Progression</span>
-            </div>
-          </div>
-
-          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <ClipboardCheck className="w-16 h-16 text-success" />
-            </div>
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Surveys Completed</p>
-            <h2 className="text-2xl font-bold mt-1 tracking-tight">
-              {stats.gamification.surveyCompleted}
-              <span className="text-sm text-muted-foreground font-normal ml-1">
-                / {stats.totalUsers}
-              </span>
-            </h2>
-            <div className="flex items-center gap-1 mt-3 text-[9px] text-success font-bold">
-              <ClipboardCheck className="w-3 h-3" />
-              <span>
-                {stats.totalUsers > 0
-                  ? Math.round((stats.gamification.surveyCompleted / stats.totalUsers) * 100)
-                  : 0}% Onboarded
-              </span>
-            </div>
-          </div>
-
-          {/* Total Badges */}
-          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <Award className="w-16 h-16 text-warning" />
-            </div>
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Active Badges</p>
-            <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats.gamification.totalBadges}</h2>
-            <div className="flex items-center gap-1 mt-3 text-[9px] text-warning font-bold">
-              <Award className="w-3 h-3" />
-              <span>{stats.gamification.earnedBadgesCount} Earned Total</span>
-            </div>
-          </div>
-
-          {/* Total Quests */}
-          <div className="glass p-4 rounded-xl border border-white/5 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-              <Zap className="w-16 h-16 text-primary" />
-            </div>
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Active Quests</p>
-            <h2 className="text-2xl font-bold mt-1 tracking-tight">{stats.gamification.totalQuests}</h2>
-            <div className="flex items-center gap-1 mt-3 text-[9px] text-primary font-bold">
-              <Zap className="w-3 h-3" />
-              <span>{stats.gamification.questCompletions} Completions</span>
-            </div>
-          </div>
-        </motion.div>
-      )}
+     
 
       {/* Control Panels Grid */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 gap-4">
         {/* Navigation Shortcuts */}
         <div className="glass p-6 rounded-xl border border-white/5 space-y-4">
           <h3 className="text-sm font-bold tracking-tight border-b border-white/5 pb-2">Management Portals</h3>

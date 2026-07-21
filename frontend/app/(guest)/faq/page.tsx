@@ -11,7 +11,9 @@ import {
   ArrowRight,
   ShieldCheck,
   Zap,
-  DollarSign
+  DollarSign,
+  RefreshCw,
+  Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -48,8 +50,6 @@ const faqs = [
     icon: HelpCircle
   }
 ];
-
-import { RefreshCw, Activity } from "lucide-react";
 
 function FAQItem({ faq, index }: { faq: any, index: number }) {
   const [isOpen, setIsOpen] = useState(index === 0);

@@ -219,7 +219,7 @@ export default function GlobalTradeLog() {
                       <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                         item.tradeType === "BUY"
                           ? "bg-success/10 border-success/20 text-success"
-                          : "bg-success/10 border-success/20 text-success"
+                          : "bg-danger/10 border-danger/20 text-danger"
                       }`}>
                         {item.tradeType === "BUY" ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
                         {item.tradeType}
@@ -240,7 +240,7 @@ export default function GlobalTradeLog() {
                           ? "bg-success/10 border-success/20 text-success"
                           : item.status === "PENDING"
                           ? "bg-warning/10 border-warning/20 text-warning"
-                          : "bg-success/10 border-success/20 text-success"
+                          : "bg-danger/10 border-danger/20 text-danger"
                       }`}>
                         {item.status === "COMPLETED" ? (
                           <CheckCircle className="w-2.5 h-2.5" />

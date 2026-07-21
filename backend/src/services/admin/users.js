@@ -19,7 +19,7 @@ import { getPortfolio } from '../trade.service.js';
  * @returns {Promise<{data: Object[], pagination: Object}>} Paginated users.
  */
 export const getUsersList = async ({ page = 1, limit = 20, search = '', role = '', isVerified = '' }) => {
-  const query = {};
+  const query =  { role: { $ne: 'admin' } };
 
   if (search) {
     query.$or = [
@@ -138,12 +138,12 @@ export const getUserDetails = async (userId) => {
 /**
  * Update a user's role. Only 'user' or 'admin' are accepted.
  * @param {string} userId - The user's ObjectId.
- * @param {string} role - The new role ('user' | 'admin').
+ * @param {string} role - The new role ('user' | 'instructor' | 'admin').
  * @returns {Promise<Object>} Updated user document (without password).
  * @throws {ErrorResponse} 400 if role is invalid, 404 if user not found.
  */
 export const updateUserRole = async (userId, role) => {
-  if (!['user', 'admin'].includes(role)) {
+  if (!['user', 'instructor', 'admin'].includes(role)) {
     throw new ErrorResponse(400, 'Invalid role');
   }
 

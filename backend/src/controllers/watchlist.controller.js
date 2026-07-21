@@ -4,7 +4,6 @@ import asyncHandler from '../utils/asyncHandler.js';
 
 export const list = asyncHandler(async (req, res) => {
   const data = await watchlistService.getWatchlist(req.user._id);
-  if (!data) return Response.error(res, 'Watchlist is empty', status = 404);
   return Response.success(res, { watchlist: data }, 'Watchlist retrieved');
 });
 

@@ -13,7 +13,7 @@ const UserSchema = new Schema(
     fullName: { type: String, required: true, index: true },
     password: { type: String, required: true, select: false },
     isVerified: { type: Boolean, default: false },
-    role: { type: String, default: 'user' , enum: ['user', 'admin']},
+    role: { type: String, default: 'user' , enum: ['user', 'instructor', 'admin']},
     notificationPreferences: {
       trade: { type: Boolean, default: true },
       system: { type: Boolean, default: true },

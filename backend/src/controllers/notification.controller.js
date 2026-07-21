@@ -29,6 +29,5 @@ export const markAllRead = asyncHandler(async (req, res) => {
 
 export const unreadCount = asyncHandler(async (req, res) => {
   const count = await notificationService.getUnreadCount(req.user._id);
-  if (!count) throw new ErrorResponse(404, 'Unread count not found');
   return Response.success(res, { count }, 'Unread count fetched successfully');
 });

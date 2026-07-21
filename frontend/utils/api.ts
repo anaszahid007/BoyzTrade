@@ -131,4 +131,58 @@ async function apiFetch<T = any>(
   throw error;
 }
 
+export async function apiUpload<T = any>(
+  path: string,
+  formData: FormData,
+  options: RequestInit & { retry?: boolean } = {}
+): Promise<ApiResponse<T>> {
+  const { retry = true, ...rest } = options;
+  const mergedHeaders: Record<string, string> = {
+    'Accept': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+
+  loadStoredTokens();
+  if (accessToken) {
+    mergedHeaders['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  const url = buildUrl(path);
+  const response = await fetch(url, {
+    ...rest,
+    method: options.method || 'POST',
+    headers: mergedHeaders,
+    body: formData,
+  });
+
+  const text = await response.text();
+  const json = text ? JSON.parse(text) : null;
+
+  if (response.ok) {
+    return json as ApiResponse<T>;
+  }
+
+  if (response.status === 401 && retry) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      mergedHeaders['Authorization'] = `Bearer ${newToken}`;
+      const retryRes = await fetch(url, {
+        ...rest,
+        method: options.method || 'POST',
+        headers: mergedHeaders,
+        body: formData,
+      });
+      const retryText = await retryRes.text();
+      const retryJson = retryText ? JSON.parse(retryText) : null;
+      if (retryRes.ok) return retryJson as ApiResponse<T>;
+    }
+  }
+
+  const errorMessage = json?.message || response.statusText || 'Upload failed';
+  const error: any = new Error(errorMessage);
+  error.status = response.status;
+  error.data = json?.data;
+  throw error;
+}
+
 export default apiFetch;

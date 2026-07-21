@@ -1,5 +1,6 @@
 import Badge from '../../models/badge.model.js';
 import Quest from '../../models/quest.model.js';
+import ErrorResponse from '../../utils/ErrorResponse.js';
 
 /** Creates a new badge from the provided data. */
 export const createBadge = async (data) => {
@@ -9,14 +10,14 @@ export const createBadge = async (data) => {
 /** Updates an existing badge by ID. Throws if not found. */
 export const updateBadge = async (badgeId, data) => {
   const badge = await Badge.findByIdAndUpdate(badgeId, data, { new: true });
-  if (!badge) throw new Error('Badge not found');
+  if (!badge) throw new ErrorResponse(404, 'Badge not found');
   return badge;
 };
 
 /** Deletes a badge by ID. Throws if not found. */
 export const deleteBadge = async (badgeId) => {
   const badge = await Badge.findByIdAndDelete(badgeId);
-  if (!badge) throw new Error('Badge not found');
+  if (!badge) throw new ErrorResponse(404, 'Badge not found');
   return badge;
 };
 
@@ -33,14 +34,14 @@ export const createQuest = async (data) => {
 /** Updates an existing quest by ID. Throws if not found. */
 export const updateQuest = async (questId, data) => {
   const quest = await Quest.findByIdAndUpdate(questId, data, { new: true });
-  if (!quest) throw new Error('Quest not found');
+  if (!quest) throw new ErrorResponse(404, 'Quest not found');
   return quest;
 };
 
 /** Deletes a quest by ID. Throws if not found. */
 export const deleteQuest = async (questId) => {
   const quest = await Quest.findByIdAndDelete(questId);
-  if (!quest) throw new Error('Quest not found');
+  if (!quest) throw new ErrorResponse(404, 'Quest not found');
   return quest;
 };
 
