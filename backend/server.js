@@ -7,10 +7,17 @@ import { startPriceBroadcast } from './src/services/broadcast.service.js';
 import { seedLevelConfigs } from './src/models/levelConfig.model.js';
 import { seedBadges } from './src/models/badge.model.js';
 import { seedQuests } from './src/models/quest.model.js';
+import connectDb from './src/config/db.js';
 
 const PORT = env.port;
 
 const httpServer = createServer(app);
 initSocket(httpServer);
 
-httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}\nhttp://localhost:${PORT}`));
+// Database connection
+connectDb();
+
+// Start real-time broadcasting
+startPriceBroadcast();
+
+httpServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));

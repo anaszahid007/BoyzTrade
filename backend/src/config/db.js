@@ -19,9 +19,6 @@ const connectDb = async () => {
         // await seedBadges();
         // await seedQuests();
 
-        // Start real-time broadcasting
-        startPriceBroadcast();
-
     } catch (err) {
         console.error('MongoDB connection error:', error);
         process.exit(1);

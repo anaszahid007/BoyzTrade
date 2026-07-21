@@ -5,9 +5,6 @@ import morgan from 'morgan';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
-// Database connection
-import connectDb from './config/db.js';
-
 // Middleware
 import errorHandler from './middleware/error.middleware.js';
 
@@ -27,15 +24,6 @@ import env from './config/env.js';
 
 
 const app = express();
-
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (err) {
-    res.status(500).send('Database connection error');
-  }
-});
 
 app.set('trust proxy', 1);
 
