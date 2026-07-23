@@ -139,9 +139,17 @@ export const claimQuest = async (userId, userQuestId) => {
 
 /** Returns all quests for the user (active and completed) with populated quest details. */
 export const getUserQuests = async (userId) => {
-  const userQuests = await UserQuest.find({ userId })
+  const now = new Date();
+
+  const userQuests = await UserQuest.find({
+    userId,
+    $or: [
+      { periodEnd: { $gt: now } },
+      { completed: true, claimed: false },
+    ],
+  })
     .populate({ path: 'questId' })
-    .sort({ createdAt: -1 })
+    .sort({ claimed: 1, completed: -1, createdAt: -1 })
     .lean();
 
   return userQuests
